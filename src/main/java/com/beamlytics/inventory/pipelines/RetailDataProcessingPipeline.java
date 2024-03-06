@@ -26,12 +26,18 @@ import org.apache.beam.sdk.transforms.ToJson;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
+import org.joda.time.Duration;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
+import com.beamlytics.inventory.businesslogic.core.transforms.stock.StockProcessing;
+import com.beamlytics.inventory.businesslogic.core.transforms.transaction.CountGlobalStockFromTransaction;
+import com.beamlytics.inventory.businesslogic.core.transforms.transaction.TransactionPerProductAndLocation;
 import com.beamlytics.inventory.businesslogic.core.transforms.transaction.TransactionProcessing;
 import com.beamlytics.inventory.businesslogic.core.utils.ReadPubSubMsgPayLoadAsString;
 import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.Stock.StockEvent;
+import com.beamlytics.inventory.dataobjects.StockAggregation;
 import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
 
 /**
@@ -99,30 +105,30 @@ public class RetailDataProcessingPipeline {
      * **********************************************************************************************
      */
 
-//    PCollection<StockAggregation> transactionPerProductAndLocation =
-//        transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
-//
-//    PCollection<StockAggregation> inventoryTransactionPerProduct =
-//        transactionPerProductAndLocation.apply(
-//            new CountGlobalStockFromTransaction(Duration.standardSeconds(5)));
+   PCollection<StockAggregation> transactionPerProductAndLocation =
+       transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
+
+   PCollection<StockAggregation> inventoryTransactionPerProduct =
+       transactionPerProductAndLocation.apply(
+           new CountGlobalStockFromTransaction(Duration.standardSeconds(5)));
 
     /**
      * **********************************************************************************************
      * Process Stock stream
      * **********************************************************************************************
      */
-//    PCollection<String> inventoryJSON = null;
-//    if (prodMode) {
-//      inventoryJSON =
-//          p.apply(
-//              "ReadStockStream",
-//              new ReadPubSubMsgPayLoadAsString(options.getInventoryPubSubSubscriptions()));
-//    } else {
-//      checkNotNull(testStockEvents, "In TestMode you must set testClickstreamEvents");
-//      inventoryJSON = testStockEvents;
-//    }
-//
-//    PCollection<StockEvent> inventory = inventoryJSON.apply(new StockProcessing());
+   PCollection<String> inventoryJSON = null;
+   if (prodMode) {
+     inventoryJSON =
+         p.apply(
+             "ReadStockStream",
+             new ReadPubSubMsgPayLoadAsString(options.getInventoryPubSubSubscriptions()));
+   } else {
+     checkNotNull(testStockEvents, "In TestMode you must set testClickstreamEvents");
+     inventoryJSON = testStockEvents;
+   }
+
+   PCollection<StockEvent> inventory = inventoryJSON.apply(new StockProcessing());
 
     /**
      * **********************************************************************************************
