@@ -1,6 +1,7 @@
 package com.beamlytics.inventory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
 class MainTest {
 
     @org.junit.jupiter.api.BeforeEach
@@ -9,5 +10,9 @@ class MainTest {
 
     @org.junit.jupiter.api.AfterEach
     void tearDown() {
+    }
+
+    @Test
+    void main() {
     }
 }

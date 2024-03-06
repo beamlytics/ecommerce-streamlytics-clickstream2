@@ -20,8 +20,9 @@
 import com.google.auto.value.AutoValue;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
+import org.apache.http.annotation.Experimental;
 
-// @Experimental
+@Experimental
 public class Dimensions {
 
   @AutoValue
@@ -39,9 +40,9 @@ public class Dimensions {
 
     public abstract Double getLng();
 
-    public abstract StoreLocation.Builder toBuilder();
+    public abstract Builder toBuilder();
 
-    public static StoreLocation.Builder builder() {
+    public static Builder builder() {
 
       return new AutoValue_Dimensions_StoreLocation.Builder();
     }

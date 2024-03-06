@@ -17,7 +17,9 @@
  */
 package com.beamlytics.inventory.businesslogic.core;
 
-// @Experimental
+import org.apache.http.annotation.Experimental;
+
+@Experimental
 public class DeploymentAnnotations {
 
   /** Used to indicate a transform will have side effects in deployment life cycle events. */

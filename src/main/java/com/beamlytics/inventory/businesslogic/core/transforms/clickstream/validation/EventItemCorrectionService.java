@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.core.transform.clickstream.validation;
+package com.beamlytics.inventory.businesslogic.core.transforms.clickstream.validation;
 
-import com.beamlytics.inventory.businesslogic.externalservices.RetailCompanyServices;
+
+import com.beamlytics.inventory.businesslogic.core.externalservices.RetailCompanyServices;
 import com.beamlytics.inventory.dataobjects.Item;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.windowing.BoundedWindow;

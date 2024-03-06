@@ -17,11 +17,14 @@
  */
 package com.beamlytics.inventory.dataobjects;
 
-import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
+
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
+import org.apache.http.annotation.Experimental;
+
+import com.google.auto.value.AutoValue;
 
 /**
  * Objects used for dealing with clickstream within the pipeline and schemas for I/O of clickstream
@@ -133,7 +136,7 @@ import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
  *
  * }</pre>
  */
-// @Experimental
+@Experimental
 public class ClickStream {
 
   @AutoValue

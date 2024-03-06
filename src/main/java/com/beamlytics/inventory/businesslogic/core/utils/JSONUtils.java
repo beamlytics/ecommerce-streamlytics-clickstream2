@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.businesslogic.core.options.utils;
+package com.beamlytics.inventory.businesslogic.core.utils;
 
 import com.beamlytics.inventory.businesslogic.core.DeploymentAnnotations.NoPartialResultsOnDrain;
 import com.beamlytics.inventory.businesslogic.core.transforms.DeadLetterSink;

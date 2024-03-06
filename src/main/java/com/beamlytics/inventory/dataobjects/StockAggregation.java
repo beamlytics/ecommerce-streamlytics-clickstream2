@@ -18,14 +18,16 @@
 package com.beamlytics.inventory.dataobjects;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
+import org.apache.http.annotation.Experimental;
+
+import javax.annotation.Nullable;
 
 @AutoValue
 @DefaultSchema(AutoValueSchema.class)
-// @Experimental
+@Experimental
 public abstract class StockAggregation {
 
   @Nullable
@@ -45,9 +47,9 @@ public abstract class StockAggregation {
   @Nullable
   public abstract Long getCount();
 
-  public abstract StockAggregation.Builder toBuilder();
+  public abstract Builder toBuilder();
 
-  public static StockAggregation.Builder builder() {
+  public static Builder builder() {
     return new AutoValue_StockAggregation.Builder();
   }
 

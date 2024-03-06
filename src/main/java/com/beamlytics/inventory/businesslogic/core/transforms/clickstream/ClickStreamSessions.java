@@ -15,10 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.core.transform.clickstream;
+package com.beamlytics.inventory.businesslogic.core.transforms.clickstream;
 
-import com.beamlytics.inventory.businesslogic.core.transforms.DeadLetterSink;
-import com.google.auto.value.AutoValue;
 import org.apache.beam.sdk.schemas.transforms.Group;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.windowing.Sessions;
@@ -26,9 +24,13 @@ import org.apache.beam.sdk.transforms.windowing.Window;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions;
+import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.beamlytics.inventory.businesslogic.core.transforms.DeadLetterSink;
+import com.google.auto.value.AutoValue;
 
 /**
  * This transform creates sessions from the incoming clickstream using the cliendId and
@@ -40,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * value	        ITERABLE[ROW[ClickstreamEvent]]
  * }</pre>
  */
-// @Experimental
+@Experimental
 @AutoValue
 public abstract class ClickStreamSessions extends PTransform<PCollection<Row>, PCollection<Row>> {
 
@@ -54,6 +56,7 @@ public abstract class ClickStreamSessions extends PTransform<PCollection<Row>, P
   public static ClickStreamSessions create(Duration sessionWindowGapDuration) {
     return builder().setSessionWindowGapDuration(sessionWindowGapDuration).build();
   }
+
 
   public static Builder builder() {
     return new AutoValue_ClickStreamSessions.Builder();

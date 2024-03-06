@@ -22,12 +22,13 @@ import javax.annotation.Nullable;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
+import org.apache.http.annotation.Experimental;
 
 import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
 import com.google.auto.value.AutoValue;
 
 /** A transaction is a purchase, either in-store or via the website / mobile application. */
-// @Experimental
+ @Experimental
 public class Transaction {
 
   @AutoValue
@@ -65,9 +66,9 @@ public class Transaction {
 
     public abstract @Nullable StoreLocation getStoreLocation();
 
-    public abstract TransactionEvent.Builder toBuilder();
+    public abstract Builder toBuilder();
 
-    public static TransactionEvent.Builder builder() {
+    public static Builder builder() {
       return new AutoValue_Transaction_TransactionEvent.Builder();
     }
 

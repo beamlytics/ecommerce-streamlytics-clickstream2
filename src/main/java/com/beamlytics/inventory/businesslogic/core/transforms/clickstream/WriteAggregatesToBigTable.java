@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.core.transform.clickstream;
+package com.beamlytics.inventory.businesslogic.core.transforms.clickstream;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamBigTableSchema;

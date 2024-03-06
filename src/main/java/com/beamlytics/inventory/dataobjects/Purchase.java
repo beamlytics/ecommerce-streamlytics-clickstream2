@@ -18,10 +18,11 @@
 package com.beamlytics.inventory.dataobjects;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
+
+import javax.annotation.Nullable;
 
 /**
  *

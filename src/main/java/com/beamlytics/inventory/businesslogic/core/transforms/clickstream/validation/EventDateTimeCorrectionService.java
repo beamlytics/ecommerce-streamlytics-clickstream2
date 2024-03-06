@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.core.transform.clickstream.validation;
+package com.beamlytics.inventory.businesslogic.core.transforms.clickstream.validation;
 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.Row;

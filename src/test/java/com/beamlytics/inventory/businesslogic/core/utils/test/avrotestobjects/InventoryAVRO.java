@@ -15,28 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.beamlytics.inventory.businesslogic.core.utils;
+package com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects;
 
-import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.WriteAggregatesToBigTable.PrintMutation;
-import org.apache.beam.sdk.transforms.DoFn;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.avro.reflect.Nullable;
 
-import java.io.IOException;
+import org.apache.beam.sdk.coders.DefaultCoder;
+import org.apache.beam.sdk.extensions.avro.coders.AvroCoder;
 
-// @Experimental
-public class Print<T> extends DoFn<T, String> {
+@DefaultCoder(AvroCoder.class)
+/**
+ * Used as part of utility for creation of JSON with {@link Gson}. TODO Remove in favour of raw
+ * String for the JSON.
+ */
+public class InventoryAVRO {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PrintMutation.class);
-  String message;
-
-  public Print(String message) {
-    this.message = message;
-  }
-
-  @ProcessElement
-  public void process(@Element T row) throws IOException {
-
-    LOG.info(message + row.toString());
-  }
+  public @Nullable long timestamp;
+  public @Nullable int count;
+  public @Nullable int sku;
+  public @Nullable int product_id;
+  public @Nullable int store_id;
+  public @Nullable int aisleId;
+  public @Nullable String product_name;
+  public @Nullable int departmentId;
+  public @Nullable Float price;
+  public @Nullable String recipeId;
+  public @Nullable String image;
 }

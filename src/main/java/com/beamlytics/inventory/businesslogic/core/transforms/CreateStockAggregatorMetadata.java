@@ -17,15 +17,14 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms;
 
-import javax.annotation.Nullable;
-
+import com.beamlytics.inventory.dataobjects.StockAggregation;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.joda.time.Instant;
 
-import com.beamlytics.inventory.dataobjects.StockAggregation;
+import javax.annotation.Nullable;
 
 /**
  * Adds metadata to the stock aggregation, for use in downstream systems. The start time of the
