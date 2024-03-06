@@ -17,12 +17,14 @@
  */
 package com.beamlytics.inventory.businesslogic.core.externalservices;
 
-import com.beamlytics.inventory.dataobjects.Item;
-import org.apache.beam.sdk.schemas.Schema;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.beam.sdk.schemas.Schema;
+import org.apache.http.annotation.Experimental;
+
+import com.beamlytics.inventory.dataobjects.Item;
 
 /**
  * This class represents a mock client to a microservice implemented by the Demo Retail company.
@@ -33,9 +35,11 @@ import java.util.Map;
  * <p>Real services will often take 10-100's of ms to respond, which cause back pressure within a
  * pipeline. This version of this mock does not cause push back.
  *
- * <p>TODO convert to a service which requires a few hundred ms to respond.
+ * <p>
  */
-// @Experimental
+//TODO convert to a service which requires a few hundred ms to respond.
+
+@Experimental
 public class RetailCompanyServices {
 
   public Map<String, Item> convertItemIdsToFullText(List<String> itemIds, Schema itemSchema) {

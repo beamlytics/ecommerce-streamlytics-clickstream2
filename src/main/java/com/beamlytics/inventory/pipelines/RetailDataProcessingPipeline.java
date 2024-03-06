@@ -17,9 +17,8 @@
  */
 package com.beamlytics.inventory.pipelines;
 
-import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
-import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
-import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.*;
+
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
@@ -28,7 +27,12 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 
-import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.checkNotNull;
+import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
+import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
+import com.beamlytics.inventory.businesslogic.core.transforms.transaction.TransactionProcessing;
+import com.beamlytics.inventory.businesslogic.core.utils.ReadPubSubMsgPayLoadAsString;
+import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
 
 /**
  * Primary pipeline using {@link ClickstreamProcessing}
@@ -75,19 +79,19 @@ public class RetailDataProcessingPipeline {
      */
 
 
-//    PCollection<String> transactionsJSON = null;
-//    if (prodMode) {
-//      transactionsJSON =
-//          p.apply(
-//              "ReadTransactionStream",
-//              new ReadPubSubMsgPayLoadAsString(options.getTransactionsPubSubSubscription()));
-//    } else {
-//      checkNotNull(testTransactionEvents, "In TestMode you must set testClickstreamEvents");
-//      transactionsJSON = testTransactionEvents;
-//    }
-//
-//    PCollection<TransactionEvent> transactionWithStoreLoc =
-//        transactionsJSON.apply(new TransactionProcessing());
+   PCollection<String> transactionsJSON = null;
+   if (prodMode) {
+     transactionsJSON =
+         p.apply(
+             "ReadTransactionStream",
+             new ReadPubSubMsgPayLoadAsString(options.getTransactionsPubSubSubscription()));
+   } else {
+     checkNotNull(testTransactionEvents, "In TestMode you must set testClickstreamEvents");
+     transactionsJSON = testTransactionEvents;
+   }
+
+   PCollection<TransactionEvent> transactionWithStoreLoc =
+       transactionsJSON.apply(new TransactionProcessing());
 
     /**
      * **********************************************************************************************

@@ -52,8 +52,8 @@ public class RetailDataProcessingPipelineSimpleSmokeTest {
     retailDataProcessingPipeline.testClickstreamEvents =
         inputs.get(TestStreamGenerator.CLICKSTREAM);
 
-//    retailDataProcessingPipeline.testTransactionEvents =
-//        inputs.get(TestStreamGenerator.TRANSACTION);
+   retailDataProcessingPipeline.testTransactionEvents =
+       inputs.get(TestStreamGenerator.TRANSACTION);
 //
 //    retailDataProcessingPipeline.testStockEvents = inputs.get(TestStreamGenerator.STOCK);
 

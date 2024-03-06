@@ -17,17 +17,18 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.clickstream.validation;
 
-import com.beamlytics.inventory.businesslogic.core.transforms.ErrorMsg;
-import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ValidateAndCorrectCSEvt;
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
+
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.Row;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions;
 import org.joda.time.Instant;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
+import com.beamlytics.inventory.businesslogic.core.transforms.ErrorMsg;
+import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ValidateAndCorrectCSEvt;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Will validate each event and out put
@@ -87,6 +88,9 @@ public class ValidateEventItems extends DoFn<Row, Row> {
     o.get(ValidateAndCorrectCSEvt.MAIN).output(input);
   }
 
+
+  //TODO : Need a more detailed function for item validation, probably as an UserExit so that we can customize as needed
+  
   boolean chkItemIsInvalid(Collection<Row> items) {
 
     // If this is a valid event check that the item is populated correctly
