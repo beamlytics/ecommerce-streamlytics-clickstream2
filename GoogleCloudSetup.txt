@@ -1,4 +1,4 @@
-java -jar target/commerce-streamlytics-clickstream-1.0-SNAPSHOT-shaded.jar \
+java -jar target/ecommerce-streamlytics-clickstream-1.0-SNAPSHOT.jar
 --project=my-streaming-analytics \
 --tempLocation=gs://my-streaming-analytics-bucket1/temp/ \
 --runner=DataflowRunner \

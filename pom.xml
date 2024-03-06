@@ -95,7 +95,7 @@
                   <manifest>
                     <addClasspath>true</addClasspath>
                     <classpathPrefix>lib/</classpathPrefix>
-                    <mainClass>src/main/java/com/beamlytics/inventory/pipelines/RetailDataProcessingPipeline.java</mainClass>
+                    <mainClass>com.beamlytics.inventory.pipelines.RetailDataProcessingPipeline</mainClass>
                   </manifest>
                 </archive>
               </configuration>            
