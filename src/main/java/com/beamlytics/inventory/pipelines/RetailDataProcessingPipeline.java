@@ -22,18 +22,27 @@ import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Pr
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.Flatten;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.ToJson;
 import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionList;
+import org.apache.beam.sdk.values.TypeDescriptors;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
+import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.WriteAggregationToBigQuery;
+import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountGlobalStockUpdatePerProduct;
+import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountIncomingStockPerProductLocation;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.StockProcessing;
 import com.beamlytics.inventory.businesslogic.core.transforms.transaction.CountGlobalStockFromTransaction;
 import com.beamlytics.inventory.businesslogic.core.transforms.transaction.TransactionPerProductAndLocation;
 import com.beamlytics.inventory.businesslogic.core.transforms.transaction.TransactionProcessing;
+import com.beamlytics.inventory.businesslogic.core.utils.Print;
 import com.beamlytics.inventory.businesslogic.core.utils.ReadPubSubMsgPayLoadAsString;
 import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
 import com.beamlytics.inventory.dataobjects.Stock.StockEvent;
@@ -135,48 +144,48 @@ public class RetailDataProcessingPipeline {
      * Aggregate Inventory delivery per item per location
      * **********************************************************************************************
      */
-//    PCollection<StockAggregation> incomingStockPerProductLocation =
-//        inventory.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
-//
-//    PCollection<StockAggregation> incomingStockPerProduct =
-//        incomingStockPerProductLocation.apply(
-//            new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
+   PCollection<StockAggregation> incomingStockPerProductLocation =
+       inventory.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
+
+   PCollection<StockAggregation> incomingStockPerProduct =
+       incomingStockPerProductLocation.apply(
+           new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
 
     /**
      * **********************************************************************************************
      * Write Stock Aggregates - Combine Transaction / Inventory
      * **********************************************************************************************
      */
-//    PCollection<StockAggregation> inventoryLocationUpdates =
-//        PCollectionList.of(transactionPerProductAndLocation)
-//            .and(inventoryTransactionPerProduct)
-//            .apply(Flatten.pCollections());
-//
-//    PCollection<StockAggregation> inventoryGlobalUpdates =
-//        PCollectionList.of(inventoryTransactionPerProduct)
-//            .and(incomingStockPerProduct)
-//            .apply(Flatten.pCollections());
-//
-//    inventoryLocationUpdates.apply(
-//        WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
-//
-//    inventoryGlobalUpdates.apply(
-//        WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
+   PCollection<StockAggregation> inventoryLocationUpdates =
+       PCollectionList.of(transactionPerProductAndLocation)
+           .and(inventoryTransactionPerProduct)
+           .apply(Flatten.pCollections());
+
+   PCollection<StockAggregation> inventoryGlobalUpdates =
+       PCollectionList.of(inventoryTransactionPerProduct)
+           .and(incomingStockPerProduct)
+           .apply(Flatten.pCollections());
+
+   inventoryLocationUpdates.apply(
+       WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
+
+   inventoryGlobalUpdates.apply(
+       WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
 
     /**
      * **********************************************************************************************
      * Send Inventory updates to PubSub
      * **********************************************************************************************
      */
-//    PCollection<String> stockUpdates =
-//        inventoryGlobalUpdates.apply(
-//            "ConvertToPubSub", MapElements.into(TypeDescriptors.strings()).via(Object::toString));
-//
-//    if (options.getTestModeEnabled()) {
-//      stockUpdates.apply(ParDo.of(new Print<>("Inventory PubSub Message is: ")));
-//    } else {
-//      stockUpdates.apply(PubsubIO.writeStrings().to(options.getAggregateStockPubSubOutputTopic()));
-//    }
+   PCollection<String> stockUpdates =
+       inventoryGlobalUpdates.apply(
+           "ConvertToPubSub", MapElements.into(TypeDescriptors.strings()).via(Object::toString));
+
+   if (options.getTestModeEnabled()) {
+     stockUpdates.apply(ParDo.of(new Print<>("Inventory PubSub Message is: ")));
+   } else {
+     stockUpdates.apply(PubsubIO.writeStrings().to(options.getAggregateStockPubSubOutputTopic()));
+   }
 
     p.run();
   }
