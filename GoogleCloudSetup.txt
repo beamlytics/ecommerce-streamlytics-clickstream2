@@ -1,0 +1,10 @@
+java -jar target/commerce-streamlytics-clickstream-1.0-SNAPSHOT-shaded.jar \
+--project=my-streaming-analytics \
+--tempLocation=gs://my-streaming-analytics-bucket1/temp/ \
+--runner=DataflowRunner \
+--region=us-central1 \
+--clickStreamPubSubSubscription=projects/my-streaming-analytics/subscriptions/Clickstream-inbound-sub \
+--transactionsPubSubSubscription=projects/my-streaming-analytics/subscriptions/Transactions-inbound-sub \
+--inventoryPubSubSubscriptions=projects/my-streaming-analytics/subscriptions/Inventory-inbound-sub \
+--aggregateStockPubSubOutputTopic=projects/my-streaming-analytics/topics/Inventory-outbound \
+--dataWarehouseOutputProject=my-streaming-analytics
