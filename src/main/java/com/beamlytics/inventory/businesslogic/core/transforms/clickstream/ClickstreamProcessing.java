@@ -35,6 +35,7 @@ import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
 import com.beamlytics.inventory.businesslogic.core.utils.Print;
 import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
 import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.ClickStream.PageViewAggregator;
 import com.google.api.services.bigquery.model.TimePartitioning;
 
 /**
@@ -83,7 +84,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
             throw new IllegalArgumentException("Unable to get Schema for ClickStreamEvent class.");
         }
 
-        csEvtSchema.builder().se
+     
         
         /**
          * **********************************************************************************************
