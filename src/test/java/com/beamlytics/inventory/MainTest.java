@@ -1,18 +1,19 @@
 package com.beamlytics.inventory;
 
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
 
-class MainTest {
+public class MainTest {
 
-    @org.junit.jupiter.api.BeforeEach
-    void setUp() {
+    @Before
+    public void setUp() {
     }
 
-    @org.junit.jupiter.api.AfterEach
-    void tearDown() {
+    @After
+    public void tearDown() {
     }
 
-    @Test
-    void main() {
+    @org.junit.Test
+    public void main() {
     }
 }

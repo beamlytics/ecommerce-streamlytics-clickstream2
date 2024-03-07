@@ -86,7 +86,7 @@
 
         <!-- Ensure that the Maven jar plugin runs before the Maven
           shade plugin by listing the plugin higher within the file. -->
-        <plugin>
+        <!-- <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>${maven-jar-plugin.version}</version>
@@ -99,7 +99,7 @@
                   </manifest>
                 </archive>
               </configuration>            
-        </plugin>
+        </plugin> -->
 
         <!--
           Configures `mvn package` to produce a bundled jar ("fat jar") for runners
@@ -131,7 +131,11 @@
                         <transformers>
                             <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                <resource>reference.conf</resource>
+                                <resource>resource.conf</resource>
+                            </transformer>
+                    
+                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <mainClass>com.beamlytics.inventory.pipelines.RetailDataProcessingPipeline</mainClass>
                             </transformer>
                         </transformers>
                     </configuration>
@@ -408,12 +412,12 @@
             <version>1.17.0</version>
         </dependency>
 
-                <dependency>
+                <!-- <dependency>
                     <groupId>org.junit.jupiter</groupId>
                     <artifactId>junit-jupiter</artifactId>
                     <version>RELEASE</version>
                     <scope>test</scope>
-                </dependency>
+                </dependency> -->
     </dependencies>
 
     <dependencyManagement>
