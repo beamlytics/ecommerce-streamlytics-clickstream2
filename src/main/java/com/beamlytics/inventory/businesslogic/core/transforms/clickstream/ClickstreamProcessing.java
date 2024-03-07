@@ -130,7 +130,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
-                            //TODO : enable timestamp as partition, currently the schema defines it as long but it is not encoded as logical type of timestamp, rather string.
+                            //TODO #2 : enable timestamp as partition, currently the schema defines it as long but it is not encoded as logical type of timestamp, rather string.
                             
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
@@ -162,7 +162,8 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
-                            .withTimePartitioning(new TimePartitioning().setField("timestamp"))
+                            //TODO: #3 Need to make sure that sessionlized data goes to time partitioned table in bigquery
+                            //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
                                     String.format(
                                             "%s:%s",
@@ -194,7 +195,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
          * <p>*********************************************************************************************
          */
 
-        //TODO : Commented bigtable sink to save on costs during poc
+        //TODO:Commented #1 bigtable sink to save on costs during poc
         //pageViewAggregator.apply(
         //        WriteAggregatesToBigTable.writeToBigTable(Duration.standardSeconds(5)));
 
