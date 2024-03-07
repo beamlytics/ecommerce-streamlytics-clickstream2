@@ -21,7 +21,6 @@ import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition;
 import org.apache.beam.sdk.schemas.NoSuchSchemaException;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.schemas.transforms.Filter;
 import org.apache.beam.sdk.transforms.PTransform;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
@@ -36,7 +35,6 @@ import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
 import com.beamlytics.inventory.businesslogic.core.utils.Print;
 import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
 import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
-import com.beamlytics.inventory.dataobjects.ClickStream.PageViewAggregator;
 import com.google.api.services.bigquery.model.TimePartitioning;
 
 /**
@@ -85,6 +83,8 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
             throw new IllegalArgumentException("Unable to get Schema for ClickStreamEvent class.");
         }
 
+        csEvtSchema.builder().se
+        
         /**
          * **********************************************************************************************
          * Parse Messages to SCHEMAS
@@ -128,7 +128,9 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
-                            .withTimePartitioning(new TimePartitioning().setField("timestamp"))
+                            //TODO : enable timestamp as partition, currently the schema defines it as long but it is not encoded as logical type of timestamp, rather string.
+                            
+                            //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
                                     String.format(
                                             "%s:%s",
@@ -189,7 +191,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
          *
          * <p>*********************************************************************************************
          */
-        
+
         //TODO : Commented bigtable sink to save on costs during poc
         //pageViewAggregator.apply(
         //        WriteAggregatesToBigTable.writeToBigTable(Duration.standardSeconds(5)));
