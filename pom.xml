@@ -20,7 +20,7 @@
         <hamcrest.version>2.1</hamcrest.version>
         <jackson.version>2.14.1</jackson.version>
         <joda.version>2.10.10</joda.version>
-<!--        <junit.version>4.13.1</junit.version>-->
+       <junit.version>4.13.1</junit.version>
         <kafka.version>2.4.1</kafka.version>
         <libraries-bom.version>26.30.0</libraries-bom.version>
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
@@ -223,6 +223,14 @@
     </profiles>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
@@ -361,11 +369,11 @@
             <version>${hamcrest.version}</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--            <version>${junit.version}</version>-->
-<!--        </dependency>-->
+       <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <version>${junit.version}</version>
+        </dependency>
 
         <!-- The DirectRunner is needed for unit tests. -->
         <dependency>
@@ -395,7 +403,6 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>1.28.0</version>
         </dependency>
 
         <dependency>
@@ -403,8 +410,6 @@
             <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
             <version>2.54.0</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>com.google.cloud.bigtable</groupId>
