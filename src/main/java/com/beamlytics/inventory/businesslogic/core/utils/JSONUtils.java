@@ -169,6 +169,7 @@ public class JSONUtils {
             String.format("Could not find schema for %s", ErrorMsg.class.getCanonicalName()));
       }
 
+      //TODO #4 explore how schema conversions can be overridden for logical types such as timestamps
       ParseResult result =
           input.apply(JsonToRow.withExceptionReporting(objectSchema).withExtendedErrorInfo());
 

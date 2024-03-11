@@ -70,6 +70,7 @@ public class StockProcessing extends PTransform<PCollection<String>, PCollection
           BigQueryIO.<StockEvent>write()
               .useBeamSchema()
               .withWriteDisposition(WriteDisposition.WRITE_APPEND)
+              // TODO #8 : enable time partitioning on this table 
               //     .withTimePartitioning(new TimePartitioning().setField("timestamp"))
               .to(
                   String.format(
@@ -78,6 +79,7 @@ public class StockProcessing extends PTransform<PCollection<String>, PCollection
                       options.getInventoryBigQueryCleanTable())));
     }
 
+    //TODO #9 : remove hardcoded fixed duration of 5 sec, also this duration needs to be lower for ecommerce env. We need to test with different values and figure out minimal time system can support with varying number of worker nodes and capacities
     return inventory.apply(Window.into(FixedWindows.of(Duration.standardSeconds(5))));
   }
 }

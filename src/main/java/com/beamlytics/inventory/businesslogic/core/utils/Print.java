@@ -17,17 +17,16 @@
  */
 package com.beamlytics.inventory.businesslogic.core.utils;
 
-import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.WriteAggregatesToBigTable.PrintMutation;
+import java.io.IOException;
+
 import org.apache.beam.sdk.transforms.DoFn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 // @Experimental
 public class Print<T> extends DoFn<T, String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PrintMutation.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Print.class);
   String message;
 
   public Print(String message) {

@@ -117,6 +117,8 @@ public class RetailDataProcessingPipeline {
    PCollection<StockAggregation> transactionPerProductAndLocation =
        transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
 
+  //TODO: remove hardcoded seconds     
+
    PCollection<StockAggregation> inventoryTransactionPerProduct =
        transactionPerProductAndLocation.apply(
            new CountGlobalStockFromTransaction(Duration.standardSeconds(5)));
@@ -144,10 +146,14 @@ public class RetailDataProcessingPipeline {
      * Aggregate Inventory delivery per item per location
      * **********************************************************************************************
      */
-   PCollection<StockAggregation> incomingStockPerProductLocation =
+   //TODO: remove hardcoded seconds in counting inventory
+   
+     PCollection<StockAggregation> incomingStockPerProductLocation =
        inventory.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
 
-   PCollection<StockAggregation> incomingStockPerProduct =
+  //TODO: remove hardcoded seconds
+  
+       PCollection<StockAggregation> incomingStockPerProduct =
        incomingStockPerProductLocation.apply(
            new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
 

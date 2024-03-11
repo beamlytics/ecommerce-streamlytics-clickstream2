@@ -126,6 +126,8 @@ public class SlowMovingStoreLocationDimension {
         LOG.error("No Schema found for {} in SchemaRegistry", type);
       }
 
+      //TODO #6 WTF? The store is hardcoded to a single store? This definitely needs to come from a master data table which contains all store ids and corresponding location
+
       if (input.getPipeline().getOptions().as(RetailPipelineOptions.class).getTestModeEnabled()) {
         Map<Integer, StoreLocation> map = new HashMap<>();
         map.put(
@@ -147,6 +149,7 @@ public class SlowMovingStoreLocationDimension {
       String project =
           input.getPipeline().getOptions().as(RetailPipelineClickStreamOptions.class).getProject();
       return input
+      //TODO: #5 this  needs to be replaced by real store coming from transaction data. We can not have stores created artificically but we should design to create stores as it comes in feed.
           .apply("Impulse", GenerateSequence.from(0).withRate(1, refreshDuration))
           .apply(
               Window.<Long>into(new GlobalWindows())
@@ -161,6 +164,8 @@ public class SlowMovingStoreLocationDimension {
                     public void process(
                         @Element Long element, OutputReceiver<Map<Integer, StoreLocation>> o) {
                       Map<Integer, StoreLocation> map = new HashMap<>();
+
+//TODO: #7 We need to research how does this table get populated with data on first run? From code, it seems the table should be preloaded in bigquery? If it should be pre-loaded, then we need to create programs to do same.
 
                       TableResult result =
                           BigQueryUtil.readDataFromBigQueryUsingQueryString(
