@@ -195,7 +195,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
          * <p>*********************************************************************************************
          */
 
-        //TODO:Commented #1 bigtable sink to save on costs during poc
+        //TODO: Commented #1 bigtable sink to save on costs during poc
         //pageViewAggregator.apply(
         //        WriteAggregatesToBigTable.writeToBigTable(Duration.standardSeconds(5)));
 

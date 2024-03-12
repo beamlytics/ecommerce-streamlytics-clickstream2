@@ -188,7 +188,7 @@ public class SlowMovingStoreLocationDimension {
   }
 
   private static String storeLocationSQL(String tableRef) {
-    // TODO get lat & lng from table once the data supports it.
+    // TODO #16 get lat & lng from table once the data supports it.
     return String.format("SELECT *, \"1\" as lat, \"1\" as lng FROM `%s`", tableRef);
   }
 

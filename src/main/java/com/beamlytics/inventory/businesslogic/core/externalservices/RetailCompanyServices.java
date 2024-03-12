@@ -37,7 +37,7 @@ import com.beamlytics.inventory.dataobjects.Item;
  *
  * <p>
  */
-//TODO convert to a service which requires a few hundred ms to respond.
+//TODO #15 convert to a service which requires a few hundred ms to respond.
 
 @Experimental
 public class RetailCompanyServices {

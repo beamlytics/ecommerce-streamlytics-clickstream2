@@ -88,7 +88,7 @@ public class CountViewsPerProduct
     @Override
     public PCollection<PageViewAggregator> expand(PCollection<Row> input) {
 
-      // TODO the schema registry for PageViewAggregator throws a class cast issue
+      // TODO #18 the schema registry for PageViewAggregator throws a class cast issue
       Schema schema =
           Schema.of(
               Field.of("page", FieldType.STRING),

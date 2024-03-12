@@ -116,6 +116,7 @@ public class WriteAggregationToBigQuery<T> extends PTransform<PCollection<T>, PD
                     options.getAggregateBigQueryDataset(),
                     aggregationName,
                     createDurationSuffix(aggregationDuration)))
+                    //TODO #10 : need to partition the bigquery table on timestamp or start time
             // .withTimePartitioning(new TimePartitioning().setField("startTime"))
             .withCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
             .withWriteDisposition(WriteDisposition.WRITE_APPEND));

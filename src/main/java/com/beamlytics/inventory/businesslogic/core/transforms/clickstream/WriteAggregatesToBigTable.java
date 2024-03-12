@@ -97,7 +97,7 @@ public class WriteAggregatesToBigTable {
 
       String charset = "UTF-8";
 
-      // TODO This should never be Null eliminate bug.
+      // TODO #19 This should never be Null eliminate bug.
       String pageRef = Optional.ofNullable(input.getPage()).orElse("");
       Long count = Optional.ofNullable(input.getCount()).orElse(0L);
 

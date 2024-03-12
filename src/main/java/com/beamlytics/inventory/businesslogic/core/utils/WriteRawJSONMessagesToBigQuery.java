@@ -65,7 +65,7 @@ public class WriteRawJSONMessagesToBigQuery
      */
     if (options.getTestModeEnabled()) {
       LOG.info("In test mode, no raw messages will be sent to BigQuery.");
-      // TODO investigate why PDone here would cause a test hang.
+      // TODO #21 investigate why PDone here would cause a test hang.
       return input;
     }
 

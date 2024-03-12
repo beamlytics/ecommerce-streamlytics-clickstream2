@@ -52,7 +52,7 @@ public class CountIncomingStockPerProductLocation
   @Override
   public PCollection<StockAggregation> expand(PCollection<StockEvent> input) {
 
-    //TODO: remove hard coded attribute names if we allow integration with various systems
+    //TODO: #20 remove hard coded attribute names if we allow integration with various systems
     return input
         .apply("SelectProductIdStoreId", Select.<StockEvent>fieldNames("product_id", "store_id"))
         .apply(

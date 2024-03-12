@@ -89,7 +89,7 @@ public class ValidateEventItems extends DoFn<Row, Row> {
   }
 
 
-  //TODO : Need a more detailed function for item validation, probably as an UserExit so that we can customize as needed
+  //TODO #17 : Need a more detailed function for item validation, probably as an UserExit so that we can customize as needed
   
   boolean chkItemIsInvalid(Collection<Row> items) {
 

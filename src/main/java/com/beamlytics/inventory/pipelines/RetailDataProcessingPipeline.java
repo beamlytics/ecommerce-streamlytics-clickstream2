@@ -117,7 +117,7 @@ public class RetailDataProcessingPipeline {
    PCollection<StockAggregation> transactionPerProductAndLocation =
        transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
 
-  //TODO: remove hardcoded seconds     
+  //TODO: #12 remove hardcoded seconds     
 
    PCollection<StockAggregation> inventoryTransactionPerProduct =
        transactionPerProductAndLocation.apply(
@@ -146,12 +146,12 @@ public class RetailDataProcessingPipeline {
      * Aggregate Inventory delivery per item per location
      * **********************************************************************************************
      */
-   //TODO: remove hardcoded seconds in counting inventory
+   //TODO: #13 remove hardcoded seconds in counting inventory
    
      PCollection<StockAggregation> incomingStockPerProductLocation =
        inventory.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
 
-  //TODO: remove hardcoded seconds
+  //TODO: #14 remove hardcoded seconds
   
        PCollection<StockAggregation> incomingStockPerProduct =
        incomingStockPerProductLocation.apply(
@@ -172,7 +172,10 @@ public class RetailDataProcessingPipeline {
            .and(incomingStockPerProduct)
            .apply(Flatten.pCollections());
 
-   inventoryLocationUpdates.apply(
+
+           //TODO #11 : remove the hardcoding of 10 seconds and paramterize it
+
+           inventoryLocationUpdates.apply(
        WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
 
    inventoryGlobalUpdates.apply(
