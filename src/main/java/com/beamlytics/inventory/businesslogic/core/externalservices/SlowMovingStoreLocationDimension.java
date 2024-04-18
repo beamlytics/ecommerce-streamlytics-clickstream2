@@ -126,8 +126,7 @@ public class SlowMovingStoreLocationDimension {
         LOG.error("No Schema found for {} in SchemaRegistry", type);
       }
 
-      //TODO #6  The store is hardcoded to a single store in test mode? 
-      // This definitely needs to come from a master data table which contains all store ids and corresponding location
+      //TODO #6  The store is hardcoded to a single store in test mode
 
       if (input.getPipeline().getOptions().as(RetailPipelineOptions.class).getTestModeEnabled()) {
         Map<Integer, StoreLocation> map = new HashMap<>();

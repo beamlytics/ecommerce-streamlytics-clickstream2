@@ -17,6 +17,7 @@
  */
 package com.beamlytics.inventory.pipelines;
 
+//TODO: remove all google guava dependencies project wise
 import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.*;
 
 import org.apache.beam.sdk.Pipeline;
@@ -30,6 +31,7 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.TypeDescriptors;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
+//TODO #26 : remove all Experimental annotation once verified that its working fine and no-longer experiement
 import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
 
@@ -108,11 +110,21 @@ public class RetailDataProcessingPipeline {
    PCollection<TransactionEvent> transactionWithStoreLoc =
        transactionsJSON.apply(new TransactionProcessing());
 
+    
+    
     /**
      * **********************************************************************************************
      * Aggregate sales per item per location
      * **********************************************************************************************
      */
+
+//TODO #25 : Modify transaction schema to add type of transaction from event hub: 
+// EOMM-SALE, TAKE-SALE, ORDER-CONFIRM-IN-OMS, ORDER-CANCEL-IN-OMS, ORDER-SCHEDULE-IN-OMS, ORDER-CONFIRMED-IN-WMS, ORDER-SHIPPED-FROM-WMS, ORDER-RETURNED-STORE, ORDER-RETURNED-WMS      
+
+//TODO #24 : Filter transactions to calculate availability, rest should be written to bigquery only for analytical purposes
+// e.g. TAKE-SALE and ORDER-SHIPPED-FROM-WMS will reduce from supply and demand both
+// but ECCOMM-SALE will create an open demand till we ship the order, but we need to reduce it from supply to update availability, so it needs to be tracked under a demand bucket, which would further be subdivided into demand type buckets to allow the demand to move as order is processed in OMS and WMS till it shipped out. 
+// Need to maintain transactional-atomic-consistency when moving demand from one bucket to another
 
    PCollection<StockAggregation> transactionPerProductAndLocation =
        transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
@@ -173,7 +185,12 @@ public class RetailDataProcessingPipeline {
            .apply(Flatten.pCollections());
 
 
+
+// We are writing supply and demand of each product in a row to biquery, aggregated for past 5 min.
+
            //TODO #11 : remove the hardcoding of 10 seconds and paramterize it
+
+
 
            inventoryLocationUpdates.apply(
        WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
@@ -186,6 +203,12 @@ public class RetailDataProcessingPipeline {
      * Send Inventory updates to PubSub
      * **********************************************************************************************
      */
+// TODO: #23 Add an attribute by calculating availability as "total supply - total demand"    
+
+// TODO: #22 Add an attribute by projecting future availability by date
+
+//TODO: add looker visulation for streaming data for total demand, total supply, total on hand availability-and drilled down to store level
+
    PCollection<String> stockUpdates =
        inventoryGlobalUpdates.apply(
            "ConvertToPubSub", MapElements.into(TypeDescriptors.strings()).via(Object::toString));
