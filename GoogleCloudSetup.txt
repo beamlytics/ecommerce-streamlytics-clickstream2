@@ -1,10 +1,65 @@
+Steps 
+1. gcloud projects create retail-pipeline-421402
+2. gcloud config set project retail-pipeline-421402
+3. gcloud services enable compute.googleapis.com dataflow.googleapis.com pubsub.googleapis.com bigquery.googleapis.com cloudscheduler.googleapis.com
+4. gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="user:ritesh@beamlytics.com" --role=roles/iam.serviceAccountUser
+5. gcloud iam service-accounts create retailpipeline \
+    --description="Retail app data pipeline worker service account" \
+    --display-name="Retail app data pipeline access"
+6 
+
+gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="serviceAccount:retailpipeline@retail-pipeline-421402.iam.gserviceaccount.com" --role=roles/dataflow.admin
+
+gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="serviceAccount:retailpipeline@retail-pipeline-421402.iam.gserviceaccount.com" --role=roles/dataflow.worker
+
+gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="serviceAccount:retailpipeline@retail-pipeline-421402.iam.gserviceaccount.com" --role=roles/pubsub.editor
+
+gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="serviceAccount:retailpipeline@retail-pipeline-421402.iam.gserviceaccount.com" --role=roles/bigquery.dataEditor
+
+7. gcloud iam service-accounts add-iam-policy-binding retailpipeline@retail-pipeline-421402.iam.gserviceaccount.com --member="user:ritesh@beamlytics.com" --role=roles/iam.serviceAccountTokenCreator
+
+8. gcloud storage buckets create gs://retail-pipeline-421402-bucket1 --location=us-east1
+
+gcloud pubsub topics create Clickstream-inbound
+gcloud pubsub topics create Transactions-inbound
+gcloud pubsub topics create Inventory-inbound
+gcloud pubsub topics create Inventory-outbound
+
+
+gcloud pubsub subscriptions create --topic Clickstream-inbound Clickstream-inbound-sub
+gcloud pubsub subscriptions create --topic Transactions-inbound Transactions-inbound-sub
+gcloud pubsub subscriptions create --topic Inventory-inbound Inventory-inbound-sub
+
+bq --location=US mk \
+retail-pipeline-421402:Retail_Store
+
+bq --location=US mk \
+retail-pipeline-421402:Retail_Store_Aggregations
+
+bq query --use_legacy_sql=false \
+  'CREATE TABLE
+    Retail_Store.Store_Locations
+    (
+      id INT64,
+      city STRING,
+      state STRING,
+      zip INT64
+    );
+  INSERT INTO Retail_Store.Store_Locations
+  VALUES (1, "a_city", "a_state",00000);'
+
+
+
+
+
+
 java -jar target/ecommerce-streamlytics-clickstream-1.0-SNAPSHOT.jar
---project=my-streaming-analytics \
---tempLocation=gs://my-streaming-analytics-bucket1/temp/ \
+--project=retail-pipeline-421402\
+--tempLocation=gs://retail-pipeline-421402-bucket1/temp/ \
 --runner=DataflowRunner \
---region=us-central1 \
---clickStreamPubSubSubscription=projects/my-streaming-analytics/subscriptions/Clickstream-inbound-sub \
---transactionsPubSubSubscription=projects/my-streaming-analytics/subscriptions/Transactions-inbound-sub \
---inventoryPubSubSubscriptions=projects/my-streaming-analytics/subscriptions/Inventory-inbound-sub \
---aggregateStockPubSubOutputTopic=projects/my-streaming-analytics/topics/Inventory-outbound \
---dataWarehouseOutputProject=my-streaming-analytics
+--region=us-east1 \
+--clickStreamPubSubSubscription=projects/retail-pipeline-421402/subscriptions/Clickstream-inbound-sub \
+--transactionsPubSubSubscription=projects/retail-pipeline-421402/subscriptions/Transactions-inbound-sub \
+--inventoryPubSubSubscriptions=projects/retail-pipeline-421402/subscriptions/Inventory-inbound-sub \
+--aggregateStockPubSubOutputTopic=projects/retail-pipeline-421402/topics/Inventory-outbound \
+--dataWarehouseOutputProject=retail-pipeline-421402
