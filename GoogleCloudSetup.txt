@@ -20,11 +20,13 @@ gcloud projects add-iam-policy-binding retail-pipeline-421402 --member="serviceA
 
 8. gcloud storage buckets create gs://retail-pipeline-421402-bucket1 --location=us-east1
 
+9. 
 gcloud pubsub topics create Clickstream-inbound
 gcloud pubsub topics create Transactions-inbound
 gcloud pubsub topics create Inventory-inbound
 gcloud pubsub topics create Inventory-outbound
 
+10.
 
 gcloud pubsub subscriptions create --topic Clickstream-inbound Clickstream-inbound-sub
 gcloud pubsub subscriptions create --topic Transactions-inbound Transactions-inbound-sub
@@ -45,14 +47,9 @@ bq query --use_legacy_sql=false \
       state STRING,
       zip INT64
     );
-  INSERT INTO Retail_Store.Store_Locations
+  INSERT INTO Retail_Store.Store_Locationss
   VALUES (1, "a_city", "a_state",00000);'
-
-
-
-
-
-
+s
 java -jar target/ecommerce-streamlytics-clickstream-1.0-SNAPSHOT.jar
 --project=retail-pipeline-421402\
 --tempLocation=gs://retail-pipeline-421402-bucket1/temp/ \
