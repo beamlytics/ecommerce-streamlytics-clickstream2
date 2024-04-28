@@ -12,7 +12,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <beam.version>2.54.0</beam.version>
+        <beam.version>2.55.1</beam.version>
 
         <bigquery.version>v2-rev20230812-2.0.0</bigquery.version>
         <google-api-client.version>2.0.0</google-api-client.version>
