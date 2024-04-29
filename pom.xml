@@ -409,7 +409,7 @@
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
             <version>${beam.version}</version>
-            <scope>runtime</scope>
+
         </dependency>
 
         <dependency>
@@ -418,12 +418,13 @@
             <version>1.17.0</version>
         </dependency>
 
-                <!-- <dependency>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter</artifactId>
-                    <version>RELEASE</version>
-                    <scope>test</scope>
-                </dependency> -->
+
+        <!-- <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency> -->
     </dependencies>
 
     <dependencyManagement>
