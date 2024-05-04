@@ -59,4 +59,5 @@ java -jar target/ecommerce-streamlytics-clickstream-bundled-1.0-SNAPSHOT.jar \
 --transactionsPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Transactions-inbound-sub \
 --inventoryPubSubSubscriptions=projects/retail-pipeline-beamlytics/subscriptions/Inventory-inbound-sub \
 --aggregateStockPubSubOutputTopic=projects/retail-pipeline-beamlytics/topics/Inventory-outbound \
---dataWarehouseOutputProject=retail-pipeline-beamlytics
+--dataWarehouseOutputProject=retail-pipeline-beamlytics \
+--serviceAccount=retailpipeline@retail-pipeline-beamlytics.iam.gserviceaccount.com 
