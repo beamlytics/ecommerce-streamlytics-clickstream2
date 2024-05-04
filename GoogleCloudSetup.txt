@@ -64,6 +64,32 @@ java -jar target/ecommerce-streamlytics-clickstream-bundled-1.0-SNAPSHOT.jar \
 --experiments=use_runner_v2 \
 --experiments=enable_data_sampling
 
+gcloud scheduler jobs create pubsub clickstream \
+  --schedule="* * * * *" \
+  --location=us-east1 \
+  --topic="Clickstream-inbound" \
+  --message-body='{"uid":464670,"sessionId":null,"returning":false,"lat":39.669082,"lng":-80.312306,"agent":"Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;","event":"add-to-cart","transaction":false,"timestamp":1660091197071,"ecommerce":{"items":[{"item_name":"Donut Friday Scented T-Shirt","item_id":"67890","price":33.75,"item_brand":"Google","item_category":"Apparel","item_category_2":"Mens","item_category_3":"Shirts","item_category_4":"Tshirts","item_variant":"Black","item_list_name":"Search Results","item_list_id":"SR123","index":1,"quantity":2}]},"user_id":74378,"client_id":"52393559","page_previous":"P_3","page":"P_3","event_datetime":"2022-08-10 12:26:37"}'
+
+gcloud scheduler jobs run --location=us-east1 clickstream
+
+gcloud scheduler jobs create pubsub inventory \
+  --schedule="*/2 * * * *" \
+  --location=us-east1  \
+  --topic="Inventory-inbound" \
+  --message-body='{"count":1,"sku":0,"aisleId":0,"product_name":null,"departmentId":0,"price":null,"recipeId":null,"image":null,"timestamp":1660149636076,"store_id":1,"product_id":10050}'
+
+gcloud scheduler jobs run --location=us-east1 inventory
+
+gcloud scheduler jobs create pubsub transactions \
+  --schedule="*/2 * * * *" \
+  --location=us-east1  \
+  --topic="Transactions-inbound" \
+  --message-body='{"order_number":"b8be9222-990d-11ea-9c05-42010af00081","user_id":998685,"store_id":1,"returning":false,"time_of_sale":0,"department_id":0,"product_id":4,"product_count":1,"price":25.0,"order_id":0,"order_dow":0,"order_hour_of_day":0,"order_woy":0,"days_since_prior_order":null,"product_name":null,"product_sku":0,"image":null,"timestamp":1660157951000,"ecommerce":{"items":[{"item_name":"Donut Friday Scented T-Shirt","item_id":"67890","price":33.75,"item_brand":"Google","item_category":"Apparel","item_category_2":"Mens","item_category_3":"Shirts","item_category_4":"Tshirts","item_variant":"Black","item_list_name":"Search Results","item_list_id":"SR123","index":1,"quantity":2}]},"client_id":"1686224283","page_previous":null,"page":null,"event_datetime":"2022-08-10 06:59:11"}'
+
+gcloud scheduler jobs run --location=us-east1 transactions
+
+
+
 
 
 
