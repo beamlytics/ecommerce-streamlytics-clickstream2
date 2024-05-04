@@ -50,7 +50,7 @@ bq query --use_legacy_sql=false \
   INSERT INTO Retail_Store.Store_Locationss
   VALUES (1, "a_city", "a_state",00000);'
 
-java -jar target/ecommerce-streamlytics-clickstream-1.0-SNAPSHOT.jar \
+java -jar target/target/ecommerce-streamlytics-clickstream-bundled-1.0-SNAPSHOT.jar \
 --project=retail-pipeline-beamlytics \
 --tempLocation=gs://retail-pipeline-beamlytics-bucket1/temp/ \
 --runner=DataflowRunner \
