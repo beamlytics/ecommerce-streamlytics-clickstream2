@@ -128,6 +128,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
+                            .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
                             //TODO #2 : enable timestamp as partition, currently the schema defines it as long but it is not encoded as logical type of timestamp, rather string.
                             
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
@@ -160,6 +161,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
+                            .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
                             //TODO: #3 Need to make sure that sessionlized data goes to time partitioned table in bigquery
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
