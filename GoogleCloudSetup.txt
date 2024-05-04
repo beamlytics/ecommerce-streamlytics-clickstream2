@@ -49,14 +49,14 @@ bq query --use_legacy_sql=false \
     );
   INSERT INTO Retail_Store.Store_Locationss
   VALUES (1, "a_city", "a_state",00000);'
-s
+
 java -jar target/ecommerce-streamlytics-clickstream-1.0-SNAPSHOT.jar \
---project=retail-pipeline-421402 \
---tempLocation=gs://retail-pipeline-421402-bucket1/temp/ \
+--project=retail-pipeline-beamlytics \
+--tempLocation=gs://retail-pipeline-beamlytics-bucket1/temp/ \
 --runner=DataflowRunner \
 --region=us-east1 \
---clickStreamPubSubSubscription=projects/retail-pipeline-421402/subscriptions/Clickstream-inbound-sub \
---transactionsPubSubSubscription=projects/retail-pipeline-421402/subscriptions/Transactions-inbound-sub \
---inventoryPubSubSubscriptions=projects/retail-pipeline-421402/subscriptions/Inventory-inbound-sub \
---aggregateStockPubSubOutputTopic=projects/retail-pipeline-421402/topics/Inventory-outbound \
---dataWarehouseOutputProject=retail-pipeline-421402
+--clickStreamPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Clickstream-inbound-sub \
+--transactionsPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Transactions-inbound-sub \
+--inventoryPubSubSubscriptions=projects/retail-pipeline-beamlytics/subscriptions/Inventory-inbound-sub \
+--aggregateStockPubSubOutputTopic=projects/retail-pipeline-beamlytics/topics/Inventory-outbound \
+--dataWarehouseOutputProject=retail-pipeline-beamlytics
