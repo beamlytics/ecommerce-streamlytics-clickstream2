@@ -52,7 +52,7 @@ bq query --use_legacy_sql=false \
 
 java -jar target/ecommerce-streamlytics-clickstream-bundled-1.0-SNAPSHOT.jar \
 --project=retail-pipeline-beamlytics \
---tempLocation=gs://retail-pipeline-beamlytics-bucket1/temp/ \
+--tempLocation=-gs://retail-pipeline-beamlytics/bucket1/temp/ \
 --runner=DataflowRunner \
 --region=us-east1 \
 --clickStreamPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Clickstream-inbound-sub \
