@@ -168,7 +168,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                                     String.format(
                                             "%s:%s.%s",
                                             options.getDataWarehouseOutputProject(),
-                                            options.getDataWarehouseOutputProject(),
+                                            options.getMainReportingDataset(),
                                             options.getClickStreamSessionizedTable())));
         }
         /**
