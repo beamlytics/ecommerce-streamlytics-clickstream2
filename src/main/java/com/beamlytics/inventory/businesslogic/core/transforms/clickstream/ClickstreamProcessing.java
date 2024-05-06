@@ -166,8 +166,8 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
                                     String.format(
-                                            "%s.%s",
-                                            options.getMainReportingDataset(),
+                                            "%s:%s",
+                                            options.getDataWarehouseOutputProject(),
                                             options.getClickStreamSessionizedTable())));
         }
         /**
