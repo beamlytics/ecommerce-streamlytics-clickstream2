@@ -1,0 +1,24 @@
+{"uid":464670,"sessionId":null,"returning":false,"lat":39.669082,"lng":-80.312306,
+  "agent":"Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;",
+  "event":"add-to-cart",
+  "transaction":false,
+  "timestamp":1660091197071,
+  "ecommerce":
+  {"items":
+  [
+    {"item_name":"Donut Friday Scented T-Shirt",
+      "item_id":"67890",
+      "price":33.75,
+      "item_brand":"Google",
+      "item_category":"Apparel",
+      "item_category_2":"Mens","item_category_3":"Shirts","item_category_4":"Tshirts",
+      "item_variant":"Black","item_list_name":"Search Results","item_list_id":"SR123",
+      "index":1,"quantity":2}
+  ]
+  },
+  "user_id":74378,
+  "client_id":"52393559",
+  "page_previous":"P_3",
+  "page":"P_3",
+  "event_datetime":"2022-08-10 12:26:37"
+}

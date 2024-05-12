@@ -102,7 +102,13 @@ public class WriteAggregationToBigQuery<T> extends PTransform<PCollection<T>, PD
 
     if (options.getTestModeEnabled()) {
 
-      input.apply(ParDo.of(new Print<T>("Aggregation to BigQuery is: ")));
+      input.apply(ParDo.of(new Print<T>("Aggregation to BigQuery is: "+String.format(
+              "%s:%s.%s_%s",
+              options.getDataWarehouseOutputProject(),
+              options.getAggregateBigQueryDataset(),
+              aggregationName, //should be table name
+              createDurationSuffix(aggregationDuration))
+      )));
 
       return PDone.in(input.getPipeline());
     }
@@ -114,7 +120,7 @@ public class WriteAggregationToBigQuery<T> extends PTransform<PCollection<T>, PD
                     "%s:%s.%s_%s",
                     options.getDataWarehouseOutputProject(),
                     options.getAggregateBigQueryDataset(),
-                    aggregationName,
+                    aggregationName, //should be table name
                     createDurationSuffix(aggregationDuration)))
                     //TODO #10 : need to partition the bigquery table on timestamp or start time
             // .withTimePartitioning(new TimePartitioning().setField("startTime"))
