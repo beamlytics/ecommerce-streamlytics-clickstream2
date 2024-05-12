@@ -12,7 +12,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <beam.version>2.54.0</beam.version>
+        <beam.version>2.55.1</beam.version>
 
         <bigquery.version>v2-rev20230812-2.0.0</bigquery.version>
         <google-api-client.version>2.0.0</google-api-client.version>
@@ -86,7 +86,7 @@
 
         <!-- Ensure that the Maven jar plugin runs before the Maven
           shade plugin by listing the plugin higher within the file. -->
-        <!-- <plugin>
+        <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>${maven-jar-plugin.version}</version>
@@ -99,7 +99,7 @@
                   </manifest>
                 </archive>
               </configuration>            
-        </plugin> -->
+        </plugin>
 
         <!--
           Configures `mvn package` to produce a bundled jar ("fat jar") for runners
@@ -134,9 +134,9 @@
                                 <resource>resource.conf</resource>
                             </transformer>
                     
-                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                 <mainClass>com.beamlytics.inventory.pipelines.RetailDataProcessingPipeline</mainClass>
-                            </transformer>
+                            </transformer> -->
                         </transformers>
                     </configuration>
                 </execution>
@@ -176,12 +176,12 @@
                 <version>${beam.version}</version>
                 <scope>runtime</scope>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>com.google.protobuf</groupId>-->
-<!--                <artifactId>protobuf-java</artifactId>-->
-<!--                <version>3.25.3</version>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
+           <!-- <dependency>
+               <groupId>com.google.protobuf</groupId>
+               <artifactId>protobuf-java</artifactId>
+               <version>3.25.3</version>
+                <scope>runtime</scope>
+           </dependency> -->
 <!--            <dependency>-->
 <!--                <groupId>org.apache.hbase</groupId>-->
 <!--                <artifactId>hbase-client</artifactId>-->
@@ -408,7 +408,8 @@
         <dependency>
             <groupId>org.apache.beam</groupId>
             <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-            <version>2.54.0</version>
+            <version>${beam.version}</version>
+
         </dependency>
 
         <dependency>
@@ -417,12 +418,13 @@
             <version>1.17.0</version>
         </dependency>
 
-                <!-- <dependency>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter</artifactId>
-                    <version>RELEASE</version>
-                    <scope>test</scope>
-                </dependency> -->
+
+        <!-- <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency> -->
     </dependencies>
 
     <dependencyManagement>

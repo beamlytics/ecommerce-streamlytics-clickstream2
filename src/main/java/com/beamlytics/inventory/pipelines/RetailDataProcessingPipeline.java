@@ -18,22 +18,6 @@
 package com.beamlytics.inventory.pipelines;
 
 //TODO: remove all google guava dependencies project wise
-import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.*;
-
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
-import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Flatten;
-import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.ToJson;
-import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.PCollectionList;
-import org.apache.beam.sdk.values.TypeDescriptors;
-import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
-//TODO #26 : remove all Experimental annotation once verified that its working fine and no-longer experiement
-import org.apache.http.annotation.Experimental;
-import org.joda.time.Duration;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
@@ -50,6 +34,21 @@ import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
 import com.beamlytics.inventory.dataobjects.Stock.StockEvent;
 import com.beamlytics.inventory.dataobjects.StockAggregation;
 import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
+import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+import org.apache.beam.sdk.options.PipelineOptionsFactory;
+import org.apache.beam.sdk.transforms.Flatten;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.ToJson;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionList;
+import org.apache.beam.sdk.values.TypeDescriptors;
+import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
+import org.apache.http.annotation.Experimental;
+import org.joda.time.Duration;
+
+import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Primary pipeline using {@link ClickstreamProcessing}
@@ -207,7 +206,7 @@ public class RetailDataProcessingPipeline {
 
 // TODO: #22 Add an attribute by projecting future availability by date
 
-//TODO: add looker visulation for streaming data for total demand, total supply, total on hand availability-and drilled down to store level
+// TODO: add looker visualization for streaming data for total demand, total supply, total on hand availability-and drilled down to store level
 
    PCollection<String> stockUpdates =
        inventoryGlobalUpdates.apply(

@@ -17,6 +17,14 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.clickstream;
 
+import com.beamlytics.inventory.businesslogic.core.DeploymentAnnotations.PartialResultsExpectedOnDrain;
+import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
+import com.beamlytics.inventory.businesslogic.core.transforms.DeadLetterSink.SinkType;
+import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
+import com.beamlytics.inventory.businesslogic.core.utils.Print;
+import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
+import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.ClickStream.PageViewAggregator;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition;
 import org.apache.beam.sdk.schemas.NoSuchSchemaException;
@@ -28,16 +36,6 @@ import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
-
-import com.beamlytics.inventory.businesslogic.core.DeploymentAnnotations.PartialResultsExpectedOnDrain;
-import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
-import com.beamlytics.inventory.businesslogic.core.transforms.DeadLetterSink.SinkType;
-import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
-import com.beamlytics.inventory.businesslogic.core.utils.Print;
-import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
-import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
-import com.beamlytics.inventory.dataobjects.ClickStream.PageViewAggregator;
-import com.google.api.services.bigquery.model.TimePartitioning;
 
 /**
  * Process clickstream from online stores.
@@ -130,6 +128,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
+                            .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
                             //TODO #2 : enable timestamp as partition, currently the schema defines it as long but it is not encoded as logical type of timestamp, rather string.
                             
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
@@ -146,7 +145,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
          * <p>*********************************************************************************************
          */
         PCollection<Row> sessionizedCS =
-                cleanCSRow.apply(ClickStreamSessions.create(Duration.standardMinutes(10)));
+                cleanCSRow.apply(ClickStreamSessions.create(Duration.standardSeconds(30)));
 
         /**
          * *********************************************************************************************
@@ -162,13 +161,14 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
                     BigQueryIO.<Row>write()
                             .useBeamSchema()
                             .withWriteDisposition(WriteDisposition.WRITE_APPEND)
+                            .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
                             //TODO: #3 Need to make sure that sessionlized data goes to time partitioned table in bigquery
                             //.withTimePartitioning(new TimePartitioning().setField("timestamp"))
                             .to(
                                     String.format(
                                             "%s:%s",
                                             options.getDataWarehouseOutputProject(),
-                                            options.getClickStreamBigQueryCleanTable())));
+                                            options.getClickStreamSessionizedTable())));
         }
         /**
          * *********************************************************************************************

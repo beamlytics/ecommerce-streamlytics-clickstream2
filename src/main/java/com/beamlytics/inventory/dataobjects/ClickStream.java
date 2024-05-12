@@ -147,8 +147,10 @@ public class ClickStream {
    */
   public abstract static class ClickStreamEvent {
 
+//todo #29 check the data type for this field, should be timestamp
     @SchemaFieldName("event_datetime")
     public @Nullable abstract String getEventTime();
+    
 
     @SchemaFieldName("event")
     public @Nullable abstract String getEvent();
