@@ -47,12 +47,18 @@ public class StockProcessing extends PTransform<PCollection<String>, PCollection
      * Write Raw Inventory delivery
      * **********************************************************************************************
      */
+
+    //@Nishana : since all raw input is stored in raw table, and clean , parsed messged are stored in clean table
+    // we can always do outer join to get parse failed messages.
+    // In this case, we may not need a separte bq table to store parse failed messages.
+
     input.apply(new WriteRawJSONMessagesToBigQuery(options.getInventoryBigQueryRawTable()));
     /**
      * **********************************************************************************************
      * Validate Inventory delivery
      * **********************************************************************************************
      */
+    //this is equivalent to schema validation
     PCollection<StockEvent> inventory =
         input.apply(JSONUtils.ConvertJSONtoPOJO.create(StockEvent.class));
 
