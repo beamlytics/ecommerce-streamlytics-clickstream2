@@ -112,6 +112,9 @@ public class WriteAggregationToBigQuery<T> extends PTransform<PCollection<T>, PD
 
       return PDone.in(input.getPipeline());
     }
+
+//TODO, this step is not creating bigquery table
+
     input.apply(
         BigQueryIO.<T>write()
             .useBeamSchema()
@@ -126,6 +129,12 @@ public class WriteAggregationToBigQuery<T> extends PTransform<PCollection<T>, PD
             // .withTimePartitioning(new TimePartitioning().setField("startTime"))
             .withCreateDisposition(CreateDisposition.CREATE_IF_NEEDED)
             .withWriteDisposition(WriteDisposition.WRITE_APPEND));
+
+//   input.apply(
+//           TextIO.<ClickStream.PageViewAggregator>write().to(options.getDataWarehouseOutputProject())
+//            .withSuffix(".txt")
+//            .withCompression(Compression.GZIP)
+//    );
 
     return PDone.in(input.getPipeline());
   }

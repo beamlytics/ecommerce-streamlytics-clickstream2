@@ -123,6 +123,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
         if (options.getTestModeEnabled()) {
             cleanCSRow.apply(ParDo.of(new Print<>("StoreCleanedDataToDW: ")));
         } else {
+
             cleanCSRow.apply(
                     "StoreCleanedDataToDW",
                     BigQueryIO.<Row>write()
@@ -186,7 +187,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
          * <p>*********************************************************************************************
          */
         PCollection<PageViewAggregator> pageViewAggregator =
-                cleanDataWithOutErrorEvents.apply(new CountViewsPerProduct(Duration.standardSeconds(5)));
+                cleanDataWithOutErrorEvents.apply(new CountViewsPerProduct(Duration.standardSeconds(60)));
 
         /**
          * *********************************************************************************************
@@ -201,7 +202,7 @@ public class ClickstreamProcessing extends PTransform<PCollection<String>, PColl
 
         pageViewAggregator.apply(
                 WriteAggregationToBigQuery.writeAggregationToBigQuery(
-                        "PageView", Duration.standardSeconds(5)));
+                        "PageView", Duration.standardSeconds(60)));
 
         return cleanDataWithOutErrorEvents;
     }

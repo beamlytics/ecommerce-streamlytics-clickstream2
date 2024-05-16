@@ -106,6 +106,8 @@ public class JSONUtils {
               .setRowSchema(errMessageSchema)
               .apply("ConvertErrMsgToRows", Convert.fromRows(ErrorMsg.class));
 
+      //todo @Nishana implement getSinkType so that json failing parsing can be saved in bigquery
+
       if (getSinkType() == SinkType.BIGQUERY) {
         errorMsgs.apply(DeadLetterSink.createSink(getSinkType()));
       } else {
