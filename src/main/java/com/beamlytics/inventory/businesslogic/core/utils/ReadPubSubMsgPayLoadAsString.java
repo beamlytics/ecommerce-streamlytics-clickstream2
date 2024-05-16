@@ -17,8 +17,7 @@
  */
 package com.beamlytics.inventory.businesslogic.core.utils;
 
-import javax.annotation.Nullable;
-
+import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -26,7 +25,7 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
 
-import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
+import javax.annotation.Nullable;
 
 /** Wrapper to ensure that timestamp attribute has been set for PubSub. */
 // @Experimental
@@ -57,6 +56,8 @@ public class ReadPubSubMsgPayLoadAsString extends PTransform<PBegin, PCollection
                 .fromSubscription(pubsubTopic)
                 .withTimestampAttribute("TIMESTAMP"));
 
+
+    // todo : remove System.out.println in production code
     /** Output raw values if in debug mode. */
     if (input.getPipeline().getOptions().as(RetailPipelineOptions.class).getDebugMode()) {
       pubSubMessages.apply(

@@ -17,8 +17,13 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.transaction;
 
-import java.util.Map;
-
+import com.beamlytics.inventory.businesslogic.core.externalservices.SlowMovingStoreLocationDimension.StoreLocations;
+import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
+import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
+import com.beamlytics.inventory.businesslogic.core.utils.Print;
+import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
+import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
+import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition;
 import org.apache.beam.sdk.schemas.transforms.Convert;
@@ -31,13 +36,7 @@ import org.apache.beam.sdk.values.PCollectionView;
 import org.apache.beam.sdk.values.Row;
 import org.joda.time.Duration;
 
-import com.beamlytics.inventory.businesslogic.core.externalservices.SlowMovingStoreLocationDimension.StoreLocations;
-import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
-import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
-import com.beamlytics.inventory.businesslogic.core.utils.Print;
-import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
-import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
-import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
+import java.util.Map;
 
 // @Experimental
 public class TransactionProcessing
@@ -61,6 +60,9 @@ public class TransactionProcessing
      * Convert to Transactions Object
      * **********************************************************************************************
      */
+
+    //TODO : @Nishana , enable schema validation for transaction similar to clickstream processing
+
     PCollection<TransactionEvent> transactions =
         input.apply(JSONUtils.ConvertJSONtoPOJO.create(TransactionEvent.class));
 
