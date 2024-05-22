@@ -17,19 +17,18 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.transaction;
 
+import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
+import com.beamlytics.inventory.dataobjects.StockAggregation;
+import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
 import org.apache.beam.sdk.schemas.Schema.FieldType;
 import org.apache.beam.sdk.schemas.transforms.AddFields;
 import org.apache.beam.sdk.schemas.transforms.Convert;
 import org.apache.beam.sdk.schemas.transforms.Group;
 import org.apache.beam.sdk.schemas.transforms.Select;
-import org.apache.beam.sdk.transforms.Count;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.Sum;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
-
-import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
-import com.beamlytics.inventory.dataobjects.StockAggregation;
-import com.beamlytics.inventory.dataobjects.Transaction.TransactionEvent;
 
 // @Experimental
 public class TransactionPerProductAndLocation
@@ -42,13 +41,13 @@ public class TransactionPerProductAndLocation
 
     PCollection<Row> aggregate =
         input.apply(
-            "SelectProductStore", Select.<TransactionEvent>fieldNames("product_id", "store_id"));
+            "SelectProductStore", Select.<TransactionEvent>fieldNames("product_id", "store_id", "product_count"));
 
     PCollection<Row> cnt =
         aggregate
             .apply(
                 Group.<Row>byFieldNames("product_id", "store_id")
-                    .aggregateField("store_id", Count.combineFn(), "count"))
+                    .aggregateField("product_count", Sum.ofLongs(), "count"))
             .apply(
                 "SelectStoreProductCount",
                 Select.fieldNames("key.store_id", "key.product_id", "value.count"))

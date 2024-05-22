@@ -30,7 +30,7 @@ import org.apache.beam.sdk.extensions.avro.coders.AvroCoder;
 public class InventoryAVRO {
 
   public @Nullable long timestamp;
-  public @Nullable int count;
+  public @Nullable Long count;
   public @Nullable int sku;
   public @Nullable int product_id;
   public @Nullable int store_id;

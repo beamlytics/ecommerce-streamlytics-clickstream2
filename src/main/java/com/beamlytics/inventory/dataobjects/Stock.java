@@ -17,25 +17,25 @@
  */
 package com.beamlytics.inventory.dataobjects;
 
-import javax.annotation.Nullable;
-
+import com.google.auto.value.AutoValue;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
 import org.apache.http.annotation.Experimental;
-import com.google.auto.value.AutoValue;
+
+import javax.annotation.Nullable;
 
 /**
- * A Inventory event is linked to a purchase, either in-store or via the website / mobile
- * application, or a delivery.
+Only absolute full adjustments will be sent via this schema
  */
  @Experimental
 public class Stock {
 
   @AutoValue
+  @Experimental
   @DefaultSchema(AutoValueSchema.class)
   public abstract static class StockEvent {
-    public abstract @Nullable Integer getCount();
+    public abstract @Nullable Long getCount();
 
     public abstract @Nullable Integer getSku();
 
@@ -67,8 +67,9 @@ public class Stock {
     }
 
     @AutoValue.Builder
+    @Experimental
     public abstract static class Builder {
-      public abstract Builder setCount(Integer value);
+      public abstract Builder setCount(Long value);
 
       public abstract Builder setSku(Integer value);
 

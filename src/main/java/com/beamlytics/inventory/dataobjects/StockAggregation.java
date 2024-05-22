@@ -44,7 +44,7 @@ public abstract class StockAggregation {
   @SchemaFieldName("store_id")
   public abstract Integer getStoreId();
 
-  @Nullable
+
   public abstract Long getCount();
 
   public abstract Builder toBuilder();

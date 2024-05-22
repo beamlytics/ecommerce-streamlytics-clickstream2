@@ -40,7 +40,6 @@ import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.ToJson;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionList;
 import org.apache.beam.sdk.values.TypeDescriptors;
@@ -83,10 +82,10 @@ public class RetailDataProcessingPipeline {
                   .fromSubscription(options.getClickStreamPubSubSubscription())
                   .withTimestampAttribute("TIMESTAMP"));
     } else {
-      checkNotNull(testClickstreamEvents, "In TestMode you must set testClickstreamEvents");
-      clickStreamJSONMessages = testClickstreamEvents.apply(ToJson.of());
+      //checkNotNull(testClickstreamEvents, "In TestMode you must set testClickstreamEvents");
+      //clickStreamJSONMessages = testClickstreamEvents.apply(ToJson.of());
     }
-    clickStreamJSONMessages.apply(new ClickstreamProcessing());
+    //clickStreamJSONMessages.apply(new ClickstreamProcessing());
 
     /**
      * **********************************************************************************************
@@ -109,6 +108,8 @@ public class RetailDataProcessingPipeline {
    PCollection<TransactionEvent> transactionWithStoreLoc =
        transactionsJSON.apply(new TransactionProcessing());
 
+      transactionWithStoreLoc.apply(ParDo.of(new Print<>("5s transactionWithStoreLoc is: ")));
+
     
     
     /**
@@ -128,11 +129,15 @@ public class RetailDataProcessingPipeline {
    PCollection<StockAggregation> transactionPerProductAndLocation =
        transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
 
+      transactionPerProductAndLocation.apply(ParDo.of(new Print<>("5s transactionPerProductAndLocation is: ")));
+
   //TODO: #12 remove hardcoded seconds     
 
    PCollection<StockAggregation> inventoryTransactionPerProduct =
        transactionPerProductAndLocation.apply(
            new CountGlobalStockFromTransaction(Duration.standardSeconds(5)));
+
+      inventoryTransactionPerProduct.apply(ParDo.of(new Print<>("5s inventoryTransactionPerProduct is: ")));
 
     /**
      * **********************************************************************************************
@@ -162,26 +167,41 @@ public class RetailDataProcessingPipeline {
      PCollection<StockAggregation> incomingStockPerProductLocation =
        inventory.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
 
+   //TODO: write this in memorystore with index name of Location_Full, Key as ProductId_StoreId and value as count
+
+      incomingStockPerProductLocation.apply(ParDo.of(new Print<>("5s incomingStockPerProductLocation is: ")));
+
+
   //TODO: #14 remove hardcoded seconds
   
        PCollection<StockAggregation> incomingStockPerProduct =
        incomingStockPerProductLocation.apply(
            new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
 
+   //TODO: write this in memorystore with index name of Global_Full, Key as ProductId and value as count
+
+      incomingStockPerProduct.apply(ParDo.of(new Print<>("5s incomingStockPerProduct is: ")));
+
     /**
      * **********************************************************************************************
      * Write Stock Aggregates - Combine Transaction / Inventory
      * **********************************************************************************************
      */
+
+
    PCollection<StockAggregation> inventoryLocationUpdates =
        PCollectionList.of(transactionPerProductAndLocation)
-           .and(inventoryTransactionPerProduct)
+           .and(incomingStockPerProductLocation)
            .apply(Flatten.pCollections());
+
+      inventoryLocationUpdates.apply(ParDo.of(new Print<>("Flattened inventoryLocationUpdates is: ")));
 
    PCollection<StockAggregation> inventoryGlobalUpdates =
        PCollectionList.of(inventoryTransactionPerProduct)
            .and(incomingStockPerProduct)
            .apply(Flatten.pCollections());
+
+      inventoryGlobalUpdates.apply(ParDo.of(new Print<>("Flattened inventoryGlobalUpdates is: ")));
 
 
 

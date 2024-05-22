@@ -17,21 +17,20 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.stock;
 
-import javax.annotation.Nullable;
-
+import com.beamlytics.inventory.businesslogic.core.transforms.CreateStockAggregatorMetadata;
+import com.beamlytics.inventory.dataobjects.StockAggregation;
 import org.apache.beam.sdk.schemas.Schema.FieldType;
 import org.apache.beam.sdk.schemas.transforms.AddFields;
 import org.apache.beam.sdk.schemas.transforms.Convert;
 import org.apache.beam.sdk.schemas.transforms.Group;
 import org.apache.beam.sdk.schemas.transforms.Select;
-import org.apache.beam.sdk.transforms.Count;
 import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.Sum;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 import org.joda.time.Duration;
 
-import com.beamlytics.inventory.businesslogic.core.transforms.CreateStockAggregatorMetadata;
-import com.beamlytics.inventory.dataobjects.StockAggregation;
+import javax.annotation.Nullable;
 
 // @Experimental
 public class CountGlobalStockUpdatePerProduct
@@ -51,10 +50,10 @@ public class CountGlobalStockUpdatePerProduct
   @Override
   public PCollection<StockAggregation> expand(PCollection<StockAggregation> input) {
     return input
-        .apply("SelectProductID", Select.<StockAggregation>fieldNames("product_id"))
+        .apply("SelectProductID", Select.<StockAggregation>fieldNames("product_id","count"))
         .apply(
             Group.<Row>byFieldNames("product_id")
-                .aggregateField("product_id", Count.<Integer>combineFn(), "count"))
+                .aggregateField("count", Sum.ofLongs(), "count"))
         .apply("SelectProductIdCount", Select.<Row>fieldNames("key.product_id", "value.count"))
         .apply(
             AddFields.<Row>create()

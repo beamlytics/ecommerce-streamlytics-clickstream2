@@ -17,11 +17,14 @@
  */
 package com.beamlytics.inventory.pipelines.test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
+import avro.shaded.com.google.common.collect.ImmutableList;
+import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.InventoryAVRO;
+import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.TransactionsAVRO;
+import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.Ecommerce;
+import com.beamlytics.inventory.dataobjects.Item;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.beam.sdk.io.GenerateSequence;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -37,15 +40,10 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.InventoryAVRO;
-import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.TransactionsAVRO;
-import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
-import com.beamlytics.inventory.dataobjects.Ecommerce;
-import com.beamlytics.inventory.dataobjects.Item;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import avro.shaded.com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /** Small testing injector, to be used for integration testing. */
 public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
@@ -60,7 +58,7 @@ public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
   public PCollectionTuple expand(PBegin input) {
 
     return input
-        .apply(GenerateSequence.from(0).to(3).withRate(1, Duration.standardSeconds(5)))
+        .apply(GenerateSequence.from(0).to(5).withRate(1, Duration.standardSeconds(1)))
         .apply(
             ParDo.of(new CreateClickStream())
                 //.withOutputTags(CLICKSTREAM, TupleTagList.of(TRANSACTION).and(STOCK)));
@@ -218,24 +216,25 @@ public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
       transaction.department_id = 1;
       transaction.order_number = String.format("1-0075-%s", ThreadLocalRandom.current().nextLong());
       transaction.price = 1;
-      transaction.product_count = 1;
+      transaction.product_count = 200L;
       transaction.store_id = 1;
       transaction.time_of_sale = clickTime.getMillis();
       transaction.uid = 1;
       transaction.user_id = 1;
+      transaction.product_id=1;
       transaction.timestamp = clickTime.getMillis();
 
       pc.outputWithTimestamp(TRANSACTION, gson.toJson(transaction), clickTime);
       LOG.debug(String.format("Generating Msg: %s", gson.toJson(transaction)));
-      clickTime = clickTime.plus(Duration.standardSeconds(10));
+      clickTime = clickTime.plus(Duration.standardSeconds(1));
       InventoryAVRO stock = new InventoryAVRO();
-      stock.count = 1;
+      stock.count = 100L;
       stock.store_id = 1;
       stock.product_id = 1;
       stock.timestamp = clickTime.getMillis();
 
       pc.outputWithTimestamp(STOCK, gson.toJson(stock), clickTime);
-      LOG.debug(String.format("Generating Msg: %s", gson.toJson(stock)));
+      System.out.println(String.format("Generating Msg: %s", gson.toJson(stock)));
 
       /**
        * **********************************************************************************************
