@@ -62,11 +62,11 @@ public class CreateStockAggregatorMetadata
                   @Element StockAggregation input,
                   @Timestamp Instant time,
                   OutputReceiver<StockAggregation> o) {
-                o.output(
+                o.outputWithTimestamp(
                     input.toBuilder()
                         .setDurationMS(durationMS)
                         .setStartTime(time.getMillis() - durationMS + 1)
-                        .build());
+                        .build(),time);
               }
             }));
   }

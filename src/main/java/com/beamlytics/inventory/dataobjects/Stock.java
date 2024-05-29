@@ -17,13 +17,13 @@
  */
 package com.beamlytics.inventory.dataobjects;
 
-import javax.annotation.Nullable;
-
+import com.google.auto.value.AutoValue;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
 import org.apache.http.annotation.Experimental;
-import com.google.auto.value.AutoValue;
+
+import javax.annotation.Nullable;
 
 /**
  * A Inventory event is linked to a purchase, either in-store or via the website / mobile
@@ -35,15 +35,17 @@ public class Stock {
   @AutoValue
   @DefaultSchema(AutoValueSchema.class)
   public abstract static class StockEvent {
-    public abstract @Nullable Integer getCount();
+    public abstract @Nullable Long getCount();
+
+    public abstract @Nullable String getEventType();
 
     public abstract @Nullable Integer getSku();
 
     @SchemaFieldName("product_id")
-    public abstract @Nullable Integer getProductId();
+    public abstract  Integer getProductId();
 
     @SchemaFieldName("store_id")
-    public abstract @Nullable Integer getStoreId();
+    public abstract  Integer getStoreId();
 
     public abstract @Nullable Integer getAisleId();
 
@@ -68,7 +70,7 @@ public class Stock {
 
     @AutoValue.Builder
     public abstract static class Builder {
-      public abstract Builder setCount(Integer value);
+      public abstract Builder setCount(Long value);
 
       public abstract Builder setSku(Integer value);
 
@@ -89,6 +91,8 @@ public class Stock {
       public abstract Builder setImage(String value);
 
       public abstract Builder setTimestamp(Long value);
+
+      public abstract  Builder setEventType(String eventType);
 
       public abstract StockEvent build();
     }

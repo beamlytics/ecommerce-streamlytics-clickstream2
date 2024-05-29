@@ -17,11 +17,14 @@
  */
 package com.beamlytics.inventory.pipelines.test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
+import avro.shaded.com.google.common.collect.ImmutableList;
+import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.InventoryAVRO;
+import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.TransactionsAVRO;
+import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
+import com.beamlytics.inventory.dataobjects.Ecommerce;
+import com.beamlytics.inventory.dataobjects.Item;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.beam.sdk.io.GenerateSequence;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -37,15 +40,10 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.InventoryAVRO;
-import com.beamlytics.inventory.businesslogic.core.utils.test.avrotestobjects.TransactionsAVRO;
-import com.beamlytics.inventory.dataobjects.ClickStream.ClickStreamEvent;
-import com.beamlytics.inventory.dataobjects.Ecommerce;
-import com.beamlytics.inventory.dataobjects.Item;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import avro.shaded.com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /** Small testing injector, to be used for integration testing. */
 public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
@@ -220,6 +218,7 @@ public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
       transaction.price = 1;
       transaction.product_count = 1;
       transaction.store_id = 1;
+      transaction.product_id = 1;
       transaction.time_of_sale = clickTime.getMillis();
       transaction.uid = 1;
       transaction.user_id = 1;

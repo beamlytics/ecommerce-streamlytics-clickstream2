@@ -37,6 +37,7 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 import org.joda.time.Duration;
+import org.joda.time.Instant;
 
 import javax.annotation.Nullable;
 
@@ -93,7 +94,7 @@ public class CountIncomingStockPerProductLocation
       PCollection<KV<Row,Long>> step2 = step1.apply(ParDo.of(new DoFn<Row, KV<Row, Long>>() {
 
           @ProcessElement
-          public void processElement(@Element Row inputRow, OutputReceiver <KV<Row, Long>> out)
+          public void processElement(@Element Row inputRow, OutputReceiver <KV<Row, Long>> out, @Timestamp Instant instant)
           {
 
               Row outputRow = Row.withSchema(outputSchema)
@@ -101,7 +102,7 @@ public class CountIncomingStockPerProductLocation
                       .addValue(inputRow.getValue("store_id")).build();
 
               Long count = inputRow.getValue("count");
-              out.output(KV.of(outputRow,count));
+              out.outputWithTimestamp(KV.of(outputRow,count),instant);
 
           }
 
@@ -127,7 +128,7 @@ public class CountIncomingStockPerProductLocation
     PCollection<Row> step4 = step3.apply( ParDo.of(new DoFn<KV<Row, Long>, Row>() {
 
         @ProcessElement
-        public void processElement( @Element KV<Row, Long> inputKV, OutputReceiver<Row> outputReceiver)
+        public void processElement( @Element KV<Row, Long> inputKV, OutputReceiver<Row> outputReceiver, @Timestamp Instant instant)
         {
             Row row = inputKV.getKey();
             Long count = inputKV.getValue();
@@ -138,7 +139,7 @@ public class CountIncomingStockPerProductLocation
             builder.addValue(row.getValue("store_id"));
             builder.addValue(count);
             Row outputRow = builder.build();
-            outputReceiver.output(outputRow);
+            outputReceiver.outputWithTimestamp(outputRow,instant);
         }
             })
 

@@ -17,15 +17,14 @@
  */
 package com.beamlytics.inventory.dataobjects;
 
-import javax.annotation.Nullable;
-
+import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
+import com.google.auto.value.AutoValue;
 import org.apache.beam.sdk.schemas.AutoValueSchema;
 import org.apache.beam.sdk.schemas.annotations.DefaultSchema;
 import org.apache.beam.sdk.schemas.annotations.SchemaFieldName;
 import org.apache.http.annotation.Experimental;
 
-import com.beamlytics.inventory.dataobjects.Dimensions.StoreLocation;
-import com.google.auto.value.AutoValue;
+import javax.annotation.Nullable;
 
 /** A transaction is a purchase, either in-store or via the website / mobile application. */
  @Experimental
@@ -47,7 +46,7 @@ public class Transaction {
     public abstract @Nullable Integer getUserId();
 
     @SchemaFieldName("store_id")
-    public abstract @Nullable Integer getStoreId();
+    public abstract  Integer getStoreId();
 
     @SchemaFieldName("time_of_sale")
     public abstract @Nullable Long getTimeOfSale();
@@ -56,7 +55,7 @@ public class Transaction {
     public abstract @Nullable Integer getDepartmentId();
 
     @SchemaFieldName("product_id")
-    public abstract @Nullable Integer getProductId();
+    public abstract  Integer getProductId();
 
     @SchemaFieldName("product_count")
     public abstract @Nullable Integer getProductCount();

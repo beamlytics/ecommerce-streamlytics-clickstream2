@@ -36,7 +36,7 @@ public abstract class StockAggregation {
   @Nullable
   public abstract Long getStartTime();
 
-  @Nullable
+
   @SchemaFieldName("product_id")
   public abstract Integer getProductId();
 

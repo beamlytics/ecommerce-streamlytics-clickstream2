@@ -17,21 +17,17 @@
  */
 package com.beamlytics.inventory.businesslogic.core.transforms.stock;
 
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
-import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition;
-import org.apache.beam.sdk.transforms.PTransform;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
-import org.apache.beam.sdk.values.PCollection;
-import org.joda.time.Duration;
-
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.utils.JSONUtils;
 import com.beamlytics.inventory.businesslogic.core.utils.Print;
 import com.beamlytics.inventory.businesslogic.core.utils.WriteRawJSONMessagesToBigQuery;
 import com.beamlytics.inventory.dataobjects.Stock.StockEvent;
+import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
+import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO.Write.WriteDisposition;
+import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.values.PCollection;
 
 // @Experimental
 public class StockProcessing extends PTransform<PCollection<String>, PCollection<StockEvent>> {
@@ -86,6 +82,7 @@ public class StockProcessing extends PTransform<PCollection<String>, PCollection
     }
 
     //TODO #9 : remove hardcoded fixed duration of 5 sec, also this duration needs to be lower for ecommerce env. We need to test with different values and figure out minimal time system can support with varying number of worker nodes and capacities
-    return inventory.apply(Window.into(FixedWindows.of(Duration.standardSeconds(5))));
+    //return inventory.apply(Window.into(FixedWindows.of(Duration.standardSeconds(5))));
+    return inventory;
   }
 }
