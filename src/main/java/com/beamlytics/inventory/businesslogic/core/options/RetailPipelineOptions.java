@@ -19,6 +19,7 @@ package com.beamlytics.inventory.businesslogic.core.options;
 
 import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
 import org.apache.beam.sdk.options.Default;
+import org.apache.beam.sdk.options.Description;
 //import org.apache.beam.sdk.options.Default;
 
 // @Experimental
@@ -41,4 +42,29 @@ public interface RetailPipelineOptions
   Boolean getTestModeEnabled();
 
   void setTestModeEnabled(Boolean testModeEnabled);
+
+  /**
+   * Memorystore/Redis instance host. Update with a running memorystore instance in the command-line to execute the pipeline
+   */
+  @Description("Redis host")
+  @Default.String("localhost")
+  String getRedisHost();
+  void setRedisHost(String value);
+
+  @Description("Redis auth")
+  @Default.String("f2b04bcd-8974-41e1-aedf-85fb286bd9b0")
+  String getRedisAuth();
+  void setRedisAuth(String value);
+
+  /**
+   * Memorystore/Redis instance port. The default port for Redis is 6379
+   */
+  @Description("Redis port")
+  @Default.Integer(6379)
+  Integer getRedisPort();
+  void setRedisPort(Integer value);
+
+
+
+
 }

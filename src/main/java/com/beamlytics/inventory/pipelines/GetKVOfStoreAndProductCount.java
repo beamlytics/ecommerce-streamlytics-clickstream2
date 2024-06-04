@@ -24,7 +24,7 @@ public class GetKVOfStoreAndProductCount extends DoFn<StockAggregation, KV<Row, 
 
 
 
-            Row outputRow = Row.withSchema(schema).addValue(productId).addValue(null==input.getStoreId()?null:input.getStoreId()).build();
+            Row outputRow = Row.withSchema(schema).addValue(productId).addValue(null==input.getStoreId()?null:input.getStoreId()).addValue(instant.getMillis()).build();
 
             Long count = input.getCount();
 

@@ -216,22 +216,22 @@ public class TestStreamGenerator extends PTransform<PBegin, PCollectionTuple> {
       transaction.department_id = 1;
       transaction.order_number = String.format("1-0075-%s", ThreadLocalRandom.current().nextLong());
       transaction.price = 1;
-      transaction.product_count = 1;
+      transaction.product_count = 1L;
       transaction.store_id = 1;
       transaction.product_id = 1;
       transaction.time_of_sale = clickTime.getMillis();
       transaction.uid = 1;
       transaction.user_id = 1;
-      transaction.timestamp = clickTime.getMillis();
+      transaction.timestamp = Instant.now().getMillis();
 
       pc.outputWithTimestamp(TRANSACTION, gson.toJson(transaction), clickTime);
       LOG.debug(String.format("Generating Msg: %s", gson.toJson(transaction)));
       clickTime = clickTime.plus(Duration.standardSeconds(10));
       InventoryAVRO stock = new InventoryAVRO();
-      stock.count = 1;
+      stock.count = 1L;
       stock.store_id = 1;
       stock.product_id = 1;
-      stock.timestamp = clickTime.getMillis();
+      stock.timestamp = (Instant.now().plus(Duration.standardMinutes(-60))).getMillis();
 
       pc.outputWithTimestamp(STOCK, gson.toJson(stock), clickTime);
       LOG.debug(String.format("Generating Msg: %s", gson.toJson(stock)));

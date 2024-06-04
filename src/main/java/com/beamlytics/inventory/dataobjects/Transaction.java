@@ -58,7 +58,7 @@ public class Transaction {
     public abstract  Integer getProductId();
 
     @SchemaFieldName("product_count")
-    public abstract @Nullable Integer getProductCount();
+    public abstract @Nullable Long getProductCount();
 
     @SchemaFieldName("price")
     public abstract @Nullable Float getPrice();
@@ -89,7 +89,7 @@ public class Transaction {
 
       public abstract Builder setProductId(Integer value);
 
-      public abstract Builder setProductCount(Integer value);
+      public abstract Builder setProductCount(Long value);
 
       public abstract Builder setPrice(Float value);
 

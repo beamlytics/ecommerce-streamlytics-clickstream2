@@ -41,13 +41,13 @@ public class TransactionPerProductAndLocation
 
     PCollection<Row> aggregate =
         input.apply(
-            "SelectProductStore", Select.<TransactionEvent>fieldNames("product_id", "store_id", "count"));
+            "SelectProductStore", Select.<TransactionEvent>fieldNames("product_id", "store_id", "product_count"));
 
     PCollection<Row> cnt =
         aggregate
             .apply(
                 Group.<Row>byFieldNames("product_id", "store_id")
-                    .aggregateField("count", Sum.ofLongs(), "count"))
+                    .aggregateField("product_count", Sum.ofLongs(), "count"))
             .apply(
                 "SelectStoreProductCount",
                 Select.fieldNames("key.store_id", "key.product_id", "value.count"))

@@ -251,6 +251,12 @@
             <version>${beam.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-io-redis</artifactId>
+            <version>${beam.version}</version>
+        </dependency>
+
         <!-- Adds a dependency on the Python Multi-language pipelines API module. -->
         <dependency>
             <groupId>org.apache.beam</groupId>

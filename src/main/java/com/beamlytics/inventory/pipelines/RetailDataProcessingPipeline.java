@@ -21,7 +21,6 @@ package com.beamlytics.inventory.pipelines;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
-import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.WriteAggregationToBigQuery;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountGlobalStockUpdatePerProduct;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountIncomingStockPerProductLocation;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.StockProcessing;
@@ -38,16 +37,24 @@ import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.BigEndianLongCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.RowCoder;
-import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+import org.apache.beam.sdk.io.redis.RedisConnectionConfiguration;
+import org.apache.beam.sdk.io.redis.RedisIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.transforms.*;
-import org.apache.beam.sdk.transforms.windowing.FixedWindows;
-import org.apache.beam.sdk.transforms.windowing.Window;
-import org.apache.beam.sdk.values.*;
+import org.apache.beam.sdk.transforms.Filter;
+import org.apache.beam.sdk.transforms.Keys;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.View;
+import org.apache.beam.sdk.transforms.windowing.*;
+import org.apache.beam.sdk.values.KV;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.PCollectionView;
+import org.apache.beam.sdk.values.Row;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
+
+import java.util.Map;
 
 import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.checkNotNull;
 
@@ -153,7 +160,14 @@ public class RetailDataProcessingPipeline {
             return (stockevent.getEventType() == null || stockevent.getEventType().isEmpty() || stockevent.getEventType().equalsIgnoreCase("Full"));
         }));
 
-        PCollection<StockEvent> stock_full_sync_updates_windowed = stock_full_sync_updates.apply(Window.into(FixedWindows.of(Duration.standardHours(1))));
+        PCollection<StockEvent> stock_full_sync_updates_windowed;
+        stock_full_sync_updates_windowed = stock_full_sync_updates
+                .apply(
+                        Window.<StockEvent>into(FixedWindows.of(Duration.standardHours(24)))
+                                .triggering(Repeatedly.forever(AfterFirst.of(
+                                        AfterPane.elementCountAtLeast(1),
+                                        AfterProcessingTime.pastFirstElementInPane().plusDelayOf(Duration.standardMinutes(1))))).discardingFiredPanes().withAllowedLateness(Duration.standardHours(2))
+                );
 
 
         /**
@@ -166,14 +180,10 @@ public class RetailDataProcessingPipeline {
 
         PCollection<StockAggregation> incomingStockPerProductLocation = stock_full_sync_updates_windowed.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
 
-        //TODO : Store this in MemoryStore with time using microbatching -- this is location full stock position
-
-
         //TODO: #14 remove hardcoded seconds
 
         PCollection<StockAggregation> incomingStockPerProduct = incomingStockPerProductLocation.apply(new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
 
-        //TODO : Do not Store this in MemoryStore
 
         /**
          * **********************************************************************************************
@@ -184,7 +194,9 @@ public class RetailDataProcessingPipeline {
 
         final Schema product_id_store_id_key_schema = Schema.of(
                 Schema.Field.of("product_id", Schema.FieldType.INT32),
-                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true)
+                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true),
+                Schema.Field.of("timestamp", Schema.FieldType.INT64)
+
         );
 
         PCollection<KV<Row, Long>> count_of_product_at_each_store_stock =
@@ -192,33 +204,75 @@ public class RetailDataProcessingPipeline {
                         .setCoder(KvCoder.of(RowCoder.of(product_id_store_id_key_schema),
                 BigEndianLongCoder.of()));
 
+        //TODO store count_of_product_at_each_store_stock in memorystore with time stamp
+
+
+
+        //count_of_product_at_each_store_stock.apply(ParDo.of(new Print<>("count_of_product_at_each_store_stock")));
+
+        PCollection<KV<String,String>> redis_key_value_withts_fs =
+                count_of_product_at_each_store_stock.apply(ParDo.of(new ConvertToStringKV()));
+
+
+
+
+        //redis_key_value_withts_fs.apply(ParDo.of(new Print<>("redis_key_value_withts_fs")));
+
+        redis_key_value_withts_fs.apply("Writing field indexes into redis",
+                        RedisIO.write().withMethod(RedisIO.Write.Method.SET)
+                                .withEndpoint(options.getRedisHost(), options.getRedisPort()).withAuth(options.getRedisAuth()));
+
         PCollection<KV<Row, Long>> count_of_product_at_each_store_transaction =
                 transactionPerProductAndLocation.apply(ParDo.of(new GetKVOfStoreAndProductCount(product_id_store_id_key_schema,true)))
                         .setCoder(KvCoder.of(RowCoder.of(product_id_store_id_key_schema),
                                 BigEndianLongCoder.of()));;
+
+        //count_of_product_at_each_store_transaction.apply(ParDo.of(new Print<>("count_of_product_at_each_store_transaction")));
 
         PCollection<KV<Row, Long>> count_of_product_at_global_stock =
                 incomingStockPerProduct.apply(ParDo.of(new GetKVOfStoreAndProductCount(product_id_store_id_key_schema,false)))
                         .setCoder(KvCoder.of(RowCoder.of(product_id_store_id_key_schema),
                                 BigEndianLongCoder.of()));
 
+        //count_of_product_at_global_stock.apply(ParDo.of(new Print<>("count_of_product_at_global_stock")));
+
+        PCollection<KV<String,String>> redis_key_value_withts_fs_global =
+                count_of_product_at_global_stock.apply(ParDo.of(new ConvertToStringKV()));
+
+
+
+
+        redis_key_value_withts_fs_global.apply(ParDo.of(new Print<>("redis_key_value_withts_fs")));
+
+        redis_key_value_withts_fs_global.apply("Writing field indexes into redis",
+                RedisIO.write().withMethod(RedisIO.Write.Method.SET)
+                        .withEndpoint(options.getRedisHost(), options.getRedisPort()).withAuth(options.getRedisAuth()));
+
         PCollection<KV<Row, Long>> count_of_product_at_global_transaction =
                 inventoryTransactionPerProduct.apply(ParDo.of(new GetKVOfStoreAndProductCount(product_id_store_id_key_schema,true)))
                         .setCoder(KvCoder.of(RowCoder.of(product_id_store_id_key_schema),
                                 BigEndianLongCoder.of()));
 
-
-        PCollection<KV<Row,Iterable<Long>>> inventoryLocationUpdates_Row
-                = PCollectionList.of(count_of_product_at_each_store_stock).
-                and(count_of_product_at_each_store_transaction).apply(Flatten.pCollections()).apply(GroupByKey.create());
-
-        PCollection<KV<Row,Iterable<Long>>> inventoryLocationGlobalUpdates_Row
-                = PCollectionList.of(count_of_product_at_global_stock).
-                and(count_of_product_at_global_transaction).apply(Flatten.pCollections()).apply(GroupByKey.create());
+        count_of_product_at_global_transaction.apply(ParDo.of(new Print<>("count_of_product_at_global_transaction")));
 
 
-        PCollection<KV<Row, Long>> inventoryLocationUpdates_Row_Total = inventoryLocationUpdates_Row.apply(ParDo.of(
-                new SumOfStocks())
+
+
+
+
+        RedisConnectionConfiguration config = RedisConnectionConfiguration.create().withHost(options.getRedisHost()).withPort(options.getRedisPort()).withAuth(options.getRedisAuth());
+        PCollection<KV<String,String>> redis_key_value_withts_fs_result= redis_key_value_withts_fs
+                .apply("get keys", Keys.create())
+                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
+
+        //redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result")));
+
+
+        PCollectionView<Map<String, String>> redis_key_value_withts_fs_result_map = redis_key_value_withts_fs_result.apply(View.asMap());
+
+        PCollection<KV<Row, Long>> inventoryLocationUpdates_Row_Total = count_of_product_at_each_store_transaction
+                .apply(ParDo.of(
+                new SumOfStocks(redis_key_value_withts_fs_result_map)).withSideInput("side_input",redis_key_value_withts_fs_result_map)
                 )
                 .setCoder(
                         KvCoder.of(
@@ -228,8 +282,19 @@ public class RetailDataProcessingPipeline {
 
         inventoryLocationUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product per location is: ")));
 
-        PCollection<KV<Row, Long>> inventoryLocationGlobalUpdates_Row_Total = inventoryLocationGlobalUpdates_Row.apply(ParDo.of(
-                        new SumOfStocks())
+
+        PCollection<KV<String,String>> redis_key_value_withts_fs_global_result= redis_key_value_withts_fs_global
+                .apply("get keys", Keys.create())
+                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
+
+        redis_key_value_withts_fs_global_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global_result")));
+
+
+        PCollectionView<Map<String, String>> redis_key_value_withts_fs_global_result_map = redis_key_value_withts_fs_global_result.apply(View.asMap());
+
+        PCollection<KV<Row, Long>> inventoryGlobalUpdates_Row_Total = count_of_product_at_global_transaction
+                .apply(ParDo.of(
+                        new SumOfStocks(redis_key_value_withts_fs_global_result_map)).withSideInput("side_input",redis_key_value_withts_fs_global_result_map)
                 )
                 .setCoder(
                         KvCoder.of(
@@ -237,25 +302,30 @@ public class RetailDataProcessingPipeline {
                                         product_id_store_id_key_schema),
                                 BigEndianLongCoder.of()));
 
-        inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product per location is: ")));
+        inventoryGlobalUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product globally is: ")));
 
-        final Schema totals_row_schema =  Schema.of(
-                Schema.Field.of("product_id", Schema.FieldType.INT32),
-                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true),
-                Schema.Field.of("count", Schema.FieldType.INT64)
-        );
 
-        PCollection<Row> inventoryLocationUpdates_Row_Total_Row = inventoryLocationUpdates_Row_Total.apply
-                (ParDo.of(new ConvertToRow(totals_row_schema)))
-                .setCoder(
-                RowCoder.of(totals_row_schema));
 
-        PCollection<Row> inventoryLocationGlobalUpdates_Row_Total_Row =  inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new ConvertToRow(totals_row_schema))).setCoder(
-                RowCoder.of(
-                        totals_row_schema
-                ));
-        inventoryLocationUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
-        inventoryLocationGlobalUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
+
+        //inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product per location is: ")));
+
+//        final Schema totals_row_schema =  Schema.of(
+//                Schema.Field.of("product_id", Schema.FieldType.INT32),
+//                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true),
+//                Schema.Field.of("count", Schema.FieldType.INT64)
+//        );
+
+//        PCollection<Row> inventoryLocationUpdates_Row_Total_Row = inventoryLocationUpdates_Row_Total.apply
+//                (ParDo.of(new ConvertToRow(totals_row_schema)))
+//                .setCoder(
+//                RowCoder.of(totals_row_schema));
+
+//        PCollection<Row> inventoryLocationGlobalUpdates_Row_Total_Row =  inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new ConvertToRow(totals_row_schema))).setCoder(
+//                RowCoder.of(
+//                        totals_row_schema
+//                ));
+//        inventoryLocationUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
+       // inventoryLocationGlobalUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
 
 //        inventoryLocationUpdates_Row_Total_Row.apply("WriteAggregateToBQ",
 //                BigQueryIO.<Row>write().to(options.getAggregateTableName()).useBeamSchema()
@@ -263,9 +333,9 @@ public class RetailDataProcessingPipeline {
 //                        .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED));
 //
 
-        inventoryLocationUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
+//        inventoryLocationUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
 
-        inventoryLocationGlobalUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
+       // inventoryLocationGlobalUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
 
 
 
@@ -299,13 +369,13 @@ public class RetailDataProcessingPipeline {
 
 // TODO: add looker visualization for streaming data for total demand, total supply, total on hand availability-and drilled down to store level
 
-        PCollection<String> stockUpdates = inventoryLocationGlobalUpdates_Row_Total_Row.apply("ConvertToPubSub", MapElements.into(TypeDescriptors.strings()).via(Object::toString));
-
-        if (options.getTestModeEnabled()) {
-            stockUpdates.apply(ParDo.of(new Print<>("Inventory PubSub Message is: ")));
-        } else {
-            stockUpdates.apply(PubsubIO.writeStrings().to(options.getAggregateStockPubSubOutputTopic()));
-        }
+//        PCollection<String> stockUpdates = inventoryLocationGlobalUpdates_Row_Total_Row.apply("ConvertToPubSub", MapElements.into(TypeDescriptors.strings()).via(Object::toString));
+//
+//        if (options.getTestModeEnabled()) {
+//            stockUpdates.apply(ParDo.of(new Print<>("Inventory PubSub Message is: ")));
+//        } else {
+//            stockUpdates.apply(PubsubIO.writeStrings().to(options.getAggregateStockPubSubOutputTopic()));
+//        }
 
         p.run();
     }

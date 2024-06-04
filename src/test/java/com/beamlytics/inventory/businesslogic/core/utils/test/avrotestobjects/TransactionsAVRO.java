@@ -38,7 +38,7 @@ public class TransactionsAVRO {
   public @org.apache.avro.reflect.Nullable long time_of_sale;
   public @org.apache.avro.reflect.Nullable int department_id;
   public @org.apache.avro.reflect.Nullable int product_id;
-  public @org.apache.avro.reflect.Nullable int product_count;
+  public @org.apache.avro.reflect.Nullable long product_count;
   public @org.apache.avro.reflect.Nullable float price;
   public @org.apache.avro.reflect.Nullable StoreLocationAvro storeLocation;
 
