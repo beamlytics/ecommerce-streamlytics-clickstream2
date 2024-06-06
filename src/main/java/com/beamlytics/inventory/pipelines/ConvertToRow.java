@@ -4,6 +4,7 @@ import org.apache.beam.sdk.schemas.Schema;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.Row;
+import org.joda.time.DateTime;
 import org.joda.time.Instant;
 
 public class ConvertToRow extends DoFn<KV<Row, Long>,Row> {
@@ -27,7 +28,8 @@ public class ConvertToRow extends DoFn<KV<Row, Long>,Row> {
         assert inputRow != null;
         storeId=inputRow.getValue("store_id");
         productId=inputRow.getValue("product_id");
-        outputRow = outputRowBuilder.addValue(productId).addValue(storeId).addValue(count).build();
+        DateTime dateTimeForRecord = instant.toDateTime();
+        outputRow = outputRowBuilder.addValue(productId).addValue(storeId).addValue(count).addValue(dateTimeForRecord).build();
         out.outputWithTimestamp(outputRow,instant);
     }
 }

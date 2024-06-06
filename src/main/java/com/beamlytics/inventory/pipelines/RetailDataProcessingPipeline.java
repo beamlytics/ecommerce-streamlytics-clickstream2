@@ -21,6 +21,7 @@ package com.beamlytics.inventory.pipelines;
 
 import com.beamlytics.inventory.businesslogic.core.options.RetailPipelineOptions;
 import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.ClickstreamProcessing;
+import com.beamlytics.inventory.businesslogic.core.transforms.clickstream.WriteAggregationToBigQuery;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountGlobalStockUpdatePerProduct;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.CountIncomingStockPerProductLocation;
 import com.beamlytics.inventory.businesslogic.core.transforms.stock.StockProcessing;
@@ -37,14 +38,12 @@ import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.coders.BigEndianLongCoder;
 import org.apache.beam.sdk.coders.KvCoder;
 import org.apache.beam.sdk.coders.RowCoder;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.io.redis.RedisConnectionConfiguration;
 import org.apache.beam.sdk.io.redis.RedisIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.transforms.Filter;
-import org.apache.beam.sdk.transforms.Keys;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.View;
+import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
@@ -94,13 +93,13 @@ public class RetailDataProcessingPipeline {
          */
         PCollection<String> clickStreamJSONMessages = null;
 
-//        if (prodMode) {
-//            clickStreamJSONMessages = p.apply("ReadClickStream", PubsubIO.readStrings().fromSubscription(options.getClickStreamPubSubSubscription()).withTimestampAttribute("TIMESTAMP"));
-//        } else {
-//            checkNotNull(testClickstreamEvents, "In TestMode you must set testClickstreamEvents");
-//            clickStreamJSONMessages = testClickstreamEvents.apply(ToJson.of());
-//        }
-//        clickStreamJSONMessages.apply(new ClickstreamProcessing());
+        if (prodMode) {
+            clickStreamJSONMessages = p.apply("ReadClickStream", PubsubIO.readStrings().fromSubscription(options.getClickStreamPubSubSubscription()).withTimestampAttribute("TIMESTAMP"));
+        } else {
+            checkNotNull(testClickstreamEvents, "In TestMode you must set testClickstreamEvents");
+            clickStreamJSONMessages = testClickstreamEvents.apply(ToJson.of());
+        }
+        clickStreamJSONMessages.apply(new ClickstreamProcessing());
 
         /**
          * **********************************************************************************************
@@ -160,6 +159,11 @@ public class RetailDataProcessingPipeline {
             return (stockevent.getEventType() == null || stockevent.getEventType().isEmpty() || stockevent.getEventType().equalsIgnoreCase("Full"));
         }));
 
+
+        //Full stock update due to full sync or due to cycle count of a single SKU across warehouse.
+        //Can not accept partial cycle count from a single location in warehpuse.
+        //The window is 24hours but emitted within 1 minute of arrival in the window , and allows till 2 hours after watermark. It ignores the fired pane.
+        //If a full sync comes late , it can be safely ignored if an earlier full sync over-wrote the supply picture.
         PCollection<StockEvent> stock_full_sync_updates_windowed;
         stock_full_sync_updates_windowed = stock_full_sync_updates
                 .apply(
@@ -309,47 +313,39 @@ public class RetailDataProcessingPipeline {
 
         //inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product per location is: ")));
 
-//        final Schema totals_row_schema =  Schema.of(
-//                Schema.Field.of("product_id", Schema.FieldType.INT32),
-//                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true),
-//                Schema.Field.of("count", Schema.FieldType.INT64)
-//        );
+        final Schema totals_row_schema =  Schema.of(
+                Schema.Field.of("product_id", Schema.FieldType.INT32),
+                Schema.Field.of("store_id", Schema.FieldType.INT32).withNullable(true),
+                Schema.Field.of("count", Schema.FieldType.INT64),
+                Schema.Field.of("timestamp", Schema.FieldType.DATETIME)
+        );
 
-//        PCollection<Row> inventoryLocationUpdates_Row_Total_Row = inventoryLocationUpdates_Row_Total.apply
-//                (ParDo.of(new ConvertToRow(totals_row_schema)))
-//                .setCoder(
-//                RowCoder.of(totals_row_schema));
+        PCollection<Row> inventoryLocationUpdates_Row_Total_Row = inventoryLocationUpdates_Row_Total.apply
+                (ParDo.of(new ConvertToRow(totals_row_schema)))
+                .setCoder(
+                RowCoder.of(totals_row_schema));
 
-//        PCollection<Row> inventoryLocationGlobalUpdates_Row_Total_Row =  inventoryLocationGlobalUpdates_Row_Total.apply(ParDo.of(new ConvertToRow(totals_row_schema))).setCoder(
-//                RowCoder.of(
-//                        totals_row_schema
-//                ));
+        PCollection<Row> inventoryLocationGlobalUpdates_Row_Total_Row =  inventoryGlobalUpdates_Row_Total.apply(ParDo.of(new ConvertToRow(totals_row_schema))).setCoder(
+                RowCoder.of(
+                        totals_row_schema
+                ));
 //        inventoryLocationUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
        // inventoryLocationGlobalUpdates_Row_Total_Row.apply(ParDo.of(new Print<>("final count per product per location is: ")));
 
-//        inventoryLocationUpdates_Row_Total_Row.apply("WriteAggregateToBQ",
-//                BigQueryIO.<Row>write().to(options.getAggregateTableName()).useBeamSchema()
-//                        .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND)
-//                        .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED));
-//
 
-//        inventoryLocationUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
 
-       // inventoryLocationGlobalUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
+        inventoryLocationUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("StoreStockEvent", Duration.standardSeconds(10)));
+
+        inventoryLocationGlobalUpdates_Row_Total_Row.apply(WriteAggregationToBigQuery.create("GlobalStockEvent", Duration.standardSeconds(10)));
 
 
 
-//        PCollection<StockAggregation> inventoryLocationUpdates =
-//                PCollectionList.of(transactionPerProductAndLocation)
-//                        .and(incomingStockPerProductLocation).apply(Flatten.pCollections());
-//
-
-//        PCollection<StockAggregation> inventoryGlobalUpdates =
-//                PCollectionList.of(inventoryTransactionPerProduct)
-//                        .and(incomingStockPerProduct).apply(Flatten.pCollections());
 
 
-// We are writing supply and demand of each product in a row to biquery, aggregated for past 5 min.
+
+
+
+// We are writing supply and demand of each product in a row to biquery, aggregated for past 10 sec.
 
         //TODO #11 : remove the hardcoding of 10 seconds and paramterize it
 

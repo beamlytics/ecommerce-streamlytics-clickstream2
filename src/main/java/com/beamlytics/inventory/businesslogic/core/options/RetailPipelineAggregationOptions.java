@@ -29,6 +29,16 @@ public interface RetailPipelineAggregationOptions extends BigQueryOptions {
 
   void setAggregateBigTableInstance(String aggregateBigTableInstance);
 
+  @Default.String("Retail_Store_Aggregations.StoreStockEvent_10S")
+  String getStoreStockAggregateBigQueryTable();
+
+  void setStoreStockAggregateBigQueryTable(String aggregateBigQueryTable);
+
+  @Default.String("Retail_Store_Aggregations.GlobalStockEvent_10S")
+  String getGlobalStockAggregateBigQueryTable();
+
+  void setGlobalStockAggregateBigQueryTable(String aggregateBigQueryTable);
+
   @Default.String("Retail_Store_Aggregations")
   String getAggregateBigQueryTable();
 
