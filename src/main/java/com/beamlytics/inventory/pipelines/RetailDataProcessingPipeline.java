@@ -251,7 +251,7 @@ public class RetailDataProcessingPipeline {
 
         redis_key_value_withts_fs_global.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global -- Latest full stock globally in last 5 second window writing to memorystore")));
 
-        redis_key_value_withts_fs_global.apply("Writing field indexes into redis",
+        redis_key_value_withts_fs_global.apply("Writing Full Stock Postion global to MemoryStore",
                 RedisIO.write().withMethod(RedisIO.Write.Method.SET)
                         .withEndpoint(options.getRedisHost(), options.getRedisPort()).withAuth(options.getRedisAuth()));
 
@@ -270,10 +270,11 @@ public class RetailDataProcessingPipeline {
 
 
         RedisConnectionConfiguration config = RedisConnectionConfiguration.create().withHost(options.getRedisHost()).withPort(options.getRedisPort()).withAuth(options.getRedisAuth());
-        PCollection<KV<String,String>> redis_key_value_withts_fs_result= redis_key_value_withts_fs
-                .apply("get keys", Keys.create())
+        PCollection<String> redis_key_value_withts_fs_result_step1= redis_key_value_withts_fs
+                .apply("get keys", Keys.create());
+        redis_key_value_withts_fs_result_step1.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result_step1 - keys")));
+        PCollection<KV<String, String>> redis_key_value_withts_fs_result = redis_key_value_withts_fs_result_step1
                 .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
-
         redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result -- Passing this as side input")));
 
 
