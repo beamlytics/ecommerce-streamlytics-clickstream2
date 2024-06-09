@@ -117,7 +117,7 @@ public class RetailDataProcessingPipeline {
         }
 
         PCollection<TransactionEvent> transactionWithStoreLoc = transactionsJSON.apply(new TransactionProcessing());
-
+        transactionWithStoreLoc.apply(ParDo.of(new Print<>("transactionWithStoreLoc - 5 sec fixed windowed transactions")));
 
         /**
          * **********************************************************************************************
@@ -134,11 +134,12 @@ public class RetailDataProcessingPipeline {
 // Need to maintain transactional-atomic-consistency when moving demand from one bucket to another
 
         PCollection<StockAggregation> transactionPerProductAndLocation = transactionWithStoreLoc.apply(new TransactionPerProductAndLocation());
+        transactionPerProductAndLocation.apply(ParDo.of(new Print<>("transactionPerProductAndLocation : Sum of windowed transactions")));
 
         //TODO: #12 remove hardcoded seconds
 
         PCollection<StockAggregation> inventoryTransactionPerProduct = transactionPerProductAndLocation.apply(new CountGlobalStockFromTransaction(Duration.standardSeconds(5)));
-
+        inventoryTransactionPerProduct.apply(ParDo.of(new Print<>("inventoryTransactionPerProduct: Sum of global Transaction Per Product, summed over 5 seconds window")));
         /**
          * **********************************************************************************************
          * Process Stock stream
@@ -173,6 +174,7 @@ public class RetailDataProcessingPipeline {
                                         AfterProcessingTime.pastFirstElementInPane().plusDelayOf(Duration.standardMinutes(1))))).discardingFiredPanes().withAllowedLateness(Duration.standardHours(2))
                 );
 
+        stock_full_sync_updates_windowed.apply(ParDo.of(new Print<>("stock_full_sync_updates_windowed")));
 
         /**
          *
@@ -183,11 +185,12 @@ public class RetailDataProcessingPipeline {
         //TODO: #13 remove hardcoded seconds in counting inventory
 
         PCollection<StockAggregation> incomingStockPerProductLocation = stock_full_sync_updates_windowed.apply(new CountIncomingStockPerProductLocation(Duration.standardSeconds(5)));
+        incomingStockPerProductLocation.apply(ParDo.of(new Print<>("incomingStockPerProductLocation -- Latest full stock per product per location in last 5 second window")));
 
         //TODO: #14 remove hardcoded seconds
 
         PCollection<StockAggregation> incomingStockPerProduct = incomingStockPerProductLocation.apply(new CountGlobalStockUpdatePerProduct(Duration.standardSeconds(5)));
-
+        incomingStockPerProduct.apply(ParDo.of(new Print<>("incomingStockPerProduct -- Latest full stock globally in last 5 second window")));
 
         /**
          * **********************************************************************************************
@@ -218,11 +221,11 @@ public class RetailDataProcessingPipeline {
                 count_of_product_at_each_store_stock.apply(ParDo.of(new ConvertToStringKV()));
 
 
+        redis_key_value_withts_fs.apply(ParDo.of(new Print<>("redis_key_value_withts_fs -- Latest full stock per product per location in last 5 second window writing to memorystore")));
 
 
-        //redis_key_value_withts_fs.apply(ParDo.of(new Print<>("redis_key_value_withts_fs")));
 
-        redis_key_value_withts_fs.apply("Writing field indexes into redis",
+        redis_key_value_withts_fs.apply("Writing Full Stock Postion Per Product Per Store to MemoryStore",
                         RedisIO.write().withMethod(RedisIO.Write.Method.SET)
                                 .withEndpoint(options.getRedisHost(), options.getRedisPort()).withAuth(options.getRedisAuth()));
 
@@ -246,11 +249,13 @@ public class RetailDataProcessingPipeline {
 
 
 
-        redis_key_value_withts_fs_global.apply(ParDo.of(new Print<>("redis_key_value_withts_fs")));
+        redis_key_value_withts_fs_global.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global -- Latest full stock globally in last 5 second window writing to memorystore")));
 
         redis_key_value_withts_fs_global.apply("Writing field indexes into redis",
                 RedisIO.write().withMethod(RedisIO.Write.Method.SET)
                         .withEndpoint(options.getRedisHost(), options.getRedisPort()).withAuth(options.getRedisAuth()));
+
+
 
         PCollection<KV<Row, Long>> count_of_product_at_global_transaction =
                 inventoryTransactionPerProduct.apply(ParDo.of(new GetKVOfStoreAndProductCount(product_id_store_id_key_schema,true)))
@@ -269,7 +274,7 @@ public class RetailDataProcessingPipeline {
                 .apply("get keys", Keys.create())
                 .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
 
-        //redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result")));
+        redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result -- Passing this as side input")));
 
 
         PCollectionView<Map<String, String>> redis_key_value_withts_fs_result_map = redis_key_value_withts_fs_result.apply(View.asMap());
@@ -291,7 +296,7 @@ public class RetailDataProcessingPipeline {
                 .apply("get keys", Keys.create())
                 .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
 
-        redis_key_value_withts_fs_global_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global_result")));
+        redis_key_value_withts_fs_global_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global_result -- Passing this as side input for global inventory")));
 
 
         PCollectionView<Map<String, String>> redis_key_value_withts_fs_global_result_map = redis_key_value_withts_fs_global_result.apply(View.asMap());

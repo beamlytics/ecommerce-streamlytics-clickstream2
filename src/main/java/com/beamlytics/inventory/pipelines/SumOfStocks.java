@@ -58,7 +58,7 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
     @ProcessElement
     public void processElement(@Element KV<Row, Long> inputElement, OutputReceiver<KV<Row, Long>> out, @Timestamp Instant instant, ProcessContext pc) {
 
-        Map sideInput = pc.sideInput(side_input_view);
+        Map sideInput = pc.sideInput(side_input_view);//this contains only keys
 
 
         String product_id = Integer.toString(inputElement.getKey().getValue("product_id"));

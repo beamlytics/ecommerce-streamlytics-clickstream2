@@ -4,3 +4,9 @@ mvn clean
 mvn compile
 mvn test-compile
 mvn test -DargLine="--add-opens java.base/java.lang=ALL-UNNAMED"
+
+mvn package -DargLine="--add-opens java.base/java.lang=ALL-UNNAMED"
+
+
+
+java -jar target/ecommerce-streamlytics-clickstream-bundled-1.0-SNAPSHOT.jar --project=retail-pipeline-beamlytics --tempLocation=gs://retail-pipeline-beamlytics-bucket1/temp/ --runner=DataflowRunner --region=us-east1 --clickStreamPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Clickstream-inbound-sub --transactionsPubSubSubscription=projects/retail-pipeline-beamlytics/subscriptions/Transactions-inbound-sub --inventoryPubSubSubscriptions=projects/retail-pipeline-beamlytics/subscriptions/Inventory-inbound-sub --aggregateStockPubSubOutputTopic=projects/retail-pipeline-beamlytics/topics/Inventory-outbound --dataWarehouseOutputProject=retail-pipeline-beamlytics --experiments=use_runner_v2 --enableStreamingEngine --dataflowServiceOptions=enable_streaming_engine_resource_based_billing --experiments=enable_data_sampling --serviceAccount=retailpipeline@retail-pipeline-beamlytics.iam.gserviceaccount.com
