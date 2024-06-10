@@ -43,17 +43,16 @@ import org.apache.beam.sdk.io.redis.RedisConnectionConfiguration;
 import org.apache.beam.sdk.io.redis.RedisIO;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.schemas.Schema;
-import org.apache.beam.sdk.transforms.*;
+import org.apache.beam.sdk.transforms.Filter;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.ToJson;
 import org.apache.beam.sdk.transforms.windowing.*;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
-import org.apache.beam.sdk.values.PCollectionView;
 import org.apache.beam.sdk.values.Row;
 import org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.annotations.VisibleForTesting;
 import org.apache.http.annotation.Experimental;
 import org.joda.time.Duration;
-
-import java.util.Map;
 
 import static org.apache.beam.vendor.guava.v32_1_2_jre.com.google.common.base.Preconditions.checkNotNull;
 
@@ -270,19 +269,19 @@ public class RetailDataProcessingPipeline {
 
 
         RedisConnectionConfiguration config = RedisConnectionConfiguration.create().withHost(options.getRedisHost()).withPort(options.getRedisPort()).withAuth(options.getRedisAuth());
-        PCollection<String> redis_key_value_withts_fs_result_step1= redis_key_value_withts_fs
-                .apply("get keys", Keys.create());
-        redis_key_value_withts_fs_result_step1.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result_step1 - keys")));
-        PCollection<KV<String, String>> redis_key_value_withts_fs_result = redis_key_value_withts_fs_result_step1
-                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
-        redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result -- Passing this as side input")));
+//        PCollection<String> redis_key_value_withts_fs_result_step1= redis_key_value_withts_fs
+//                .apply("get keys", Keys.create());
+//        redis_key_value_withts_fs_result_step1.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result_step1 - keys: ")));
+//        PCollection<KV<String, String>> redis_key_value_withts_fs_result = redis_key_value_withts_fs_result_step1
+//                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
+//        redis_key_value_withts_fs_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_result -- Passing this as side input")));
 
 
-        PCollectionView<Map<String, String>> redis_key_value_withts_fs_result_map = redis_key_value_withts_fs_result.apply(View.asMap());
+//        PCollectionView<Map<String, String>> redis_key_value_withts_fs_result_map = redis_key_value_withts_fs_result.apply(View.asMap());
 
         PCollection<KV<Row, Long>> inventoryLocationUpdates_Row_Total = count_of_product_at_each_store_transaction
                 .apply(ParDo.of(
-                new SumOfStocks(redis_key_value_withts_fs_result_map)).withSideInput("side_input",redis_key_value_withts_fs_result_map)
+                new SumOfStocks_NoSideInput())//.withSideInput("side_input",redis_key_value_withts_fs_result_map)
                 )
                 .setCoder(
                         KvCoder.of(
@@ -293,18 +292,18 @@ public class RetailDataProcessingPipeline {
         inventoryLocationUpdates_Row_Total.apply(ParDo.of(new Print<>("final count per product per location is: ")));
 
 
-        PCollection<KV<String,String>> redis_key_value_withts_fs_global_result= redis_key_value_withts_fs_global
-                .apply("get keys", Keys.create())
-                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
+//        PCollection<KV<String,String>> redis_key_value_withts_fs_global_result= redis_key_value_withts_fs_global
+//                .apply("get keys", Keys.create())
+//                .apply(RedisIO.readKeyPatterns().withConnectionConfiguration(config));
+//
+//        redis_key_value_withts_fs_global_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global_result -- Passing this as side input for global inventory")));
 
-        redis_key_value_withts_fs_global_result.apply(ParDo.of(new Print<>("redis_key_value_withts_fs_global_result -- Passing this as side input for global inventory")));
 
-
-        PCollectionView<Map<String, String>> redis_key_value_withts_fs_global_result_map = redis_key_value_withts_fs_global_result.apply(View.asMap());
+        //PCollectionView<Map<String, String>> redis_key_value_withts_fs_global_result_map = redis_key_value_withts_fs_global_result.apply(View.asMap());
 
         PCollection<KV<Row, Long>> inventoryGlobalUpdates_Row_Total = count_of_product_at_global_transaction
                 .apply(ParDo.of(
-                        new SumOfStocks(redis_key_value_withts_fs_global_result_map)).withSideInput("side_input",redis_key_value_withts_fs_global_result_map)
+                        new SumOfStocks_NoSideInput())//.withSideInput("side_input",redis_key_value_withts_fs_global_result_map)
                 )
                 .setCoder(
                         KvCoder.of(

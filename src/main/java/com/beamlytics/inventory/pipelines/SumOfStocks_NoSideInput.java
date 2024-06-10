@@ -14,17 +14,15 @@ import redis.clients.jedis.exceptions.JedisException;
 
 import java.util.Map;
 
-public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
+public class SumOfStocks_NoSideInput extends DoFn<KV<Row, Long>, KV<Row, Long>> {
 
     PCollectionView<Map<String, String>> side_input_view = null;
     //HashMap<String,Long> availabilityMap = null;
     JedisPoolConfig poolConfig;
     JedisPool jedis_pool;
-    public SumOfStocks(PCollectionView<Map<String, String>> side_input_view) {
-        this.side_input_view = side_input_view;
-    }
 
-    public SumOfStocks() {
+
+    public SumOfStocks_NoSideInput() {
     }
 
     @Setup
@@ -61,7 +59,7 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
     @ProcessElement
     public void processElement(@Element KV<Row, Long> inputElement, OutputReceiver<KV<Row, Long>> out, @Timestamp Instant instant, ProcessContext pc) {
 
-        Map sideInput = pc.sideInput(side_input_view);//this contains only keys
+        //Map sideInput = pc.sideInput(side_input_view);//this contains only keys
 
 
         String product_id = Integer.toString(inputElement.getKey().getValue("product_id"));
@@ -74,15 +72,21 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
         String keyPattern = store_id + ":" + product_id;
         Long availability_from_redis = null;
         Long availability_calculated = null;
+        String full_stock_from_redis_value = null;
+
         //read availability from Redis
-        String result;
-        boolean broken = false;
+        //String result;
+
         Jedis jedis_Connection = null;
+
         try {
 
             jedis_Connection = jedis_pool.getResource();
             //System.out.println("got connection " + jedis_Connection.toString());
-            result = jedis_Connection.get("availability:" + keyPattern);
+
+            //Try to read availability if exists
+
+            String result = jedis_Connection.get("availability:" + keyPattern);
             try {
                 if (null != result) {
                     availability_from_redis = Long.parseLong(result);
@@ -94,8 +98,51 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
                 availability_from_redis = null;
             }
 
+            //Try to read latest full stock position
+            full_stock_from_redis_value = jedis_Connection.get(keyPattern);
+            String timestamp;
+            Long count;
+
+            if (full_stock_from_redis_value!=null)
+            {
+                 String[] values = full_stock_from_redis_value.split(":");
+                 timestamp = values[0];
+                 count= Long.parseLong(values[1]);
+            }
+            else {
+
+                timestamp = Long.toString(instant.getMillis());
+                count= 0L;
+
+            }
+
+                Long transaction_total = inputElement.getValue() == null ? 0L : inputElement.getValue();
+
+                if (instant.compareTo(Instant.ofEpochMilli(Long.parseLong(timestamp))) > 0) {
+
+                    if (availability_from_redis != null) {
+                        availability_calculated = availability_from_redis + transaction_total;
+                    } else {
+                        availability_calculated = count + transaction_total;
+                    }
+                }
+                else {
+                    availability_calculated = count;
+
+                }
+
+                jedis_Connection.set("availability:" + keyPattern, Long.toString(availability_calculated));
+                out.outputWithTimestamp(KV.of(inputElement.getKey(), availability_calculated), instant);
+
+
+
+
+
+
+
+
         } catch (JedisException exception) {
-            broken = true;
+
 
             if (jedis_pool != null) {
                 jedis_pool.returnBrokenResource(jedis_Connection);
@@ -110,10 +157,18 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
         }
 
 
-        String redis_value = (String) sideInput.get(keyPattern);
+        //String redis_value = (String) sideInput.get(keyPattern);
 
-        if (redis_value != null) {
-            String[] values = redis_value.split(":");
+        //read availability from Redis
+
+
+
+
+
+
+
+        if (full_stock_from_redis_value != null) {
+            String[] values = full_stock_from_redis_value.split(":");
             String timestamp = values[0];
             Long count = Long.parseLong(values[1]);
             Long transaction_total = inputElement.getValue() == null ? 0L : inputElement.getValue();
@@ -122,11 +177,7 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
             if (instant.compareTo(Instant.ofEpochMilli(Long.parseLong(timestamp))) > 0) {
 
 
-                if (availability_from_redis != null) {
-                    availability_calculated = availability_from_redis + transaction_total;
-                } else {
-                    availability_calculated = count + transaction_total;
-                }
+
 
                 //put availability in Redis
                 try {
@@ -136,7 +187,7 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
 
 
                 } catch (JedisException exception) {
-                    broken = true;
+
 
                     if (jedis_pool != null) {
                         jedis_pool.returnBrokenResource(jedis_Connection);
@@ -153,8 +204,6 @@ public class SumOfStocks extends DoFn<KV<Row, Long>, KV<Row, Long>> {
 
                 //end put availability in Redis
                 out.outputWithTimestamp(KV.of(inputElement.getKey(), availability_calculated), instant);
-            } else {
-                out.outputWithTimestamp(KV.of(inputElement.getKey(), count), instant);
             }
         }
 

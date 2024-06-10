@@ -47,7 +47,8 @@ public interface RetailPipelineOptions
    * Memorystore/Redis instance host. Update with a running memorystore instance in the command-line to execute the pipeline
    */
   @Description("Redis host")
-  @Default.String("10.43.192.3")
+//  @Default.String("10.43.192.3")
+  @Default.String("localhost")
   String getRedisHost();
   void setRedisHost(String value);
 
